@@ -1,0 +1,40 @@
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# API Keys (never commit these)
+config.js
+*api-key*
+*secret*
+
+# ⚠️ WARNING: Serverless functions contain temporary API key fallback
+# Remove the fallback (|| 'key') from functions before committing
+# Or add these files to gitignore if you must keep the fallback temporarily:
+# netlify/functions/create-affiliate.js
+# vercel/api/create-affiliate.js
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+npm-debug.log*
+
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+.netlify/
+.vercel/
+

@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Partner Sign Up - Stasher</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+        <!-- Header with Logo and Language -->
+        <header class="header">
+            <div class="header-inner">
+            <div class="logo-container">
+                    <a href="#" class="logo-link" id="logoLink">
+                        <img src="white - horizontal.png" alt="Stasher Logo" class="logo" id="logo">
+                    </a>
+            </div>
+            <div class="header-right">
+                    <div class="language-selector-wrapper">
+                        <span class="language-flag" id="currentLanguageFlag">🇬🇧</span>
+                <select id="languageSelect" class="language-select">
+                            <option value="en" data-flag="🇬🇧">English</option>
+                            <option value="de" data-flag="🇩🇪">German</option>
+                            <option value="fr" data-flag="🇫🇷">French</option>
+                            <option value="es" data-flag="🇪🇸">Spanish</option>
+                            <option value="pt" data-flag="🇵🇹">Portuguese</option>
+                </select>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+    <div class="container">
+
+        <!-- Landing Page -->
+        <div class="landing-page" id="landingPage">
+            <div class="landing-content">
+                <div class="landing-hero">
+                    <h1 class="landing-title">Join Stasher's Affiliate Program</h1>
+                    <p class="landing-subtitle">Help your guests or clients store their bags and receive extra revenue, higher customer satisfaction, and better reviews.</p>
+                    
+                    <div class="landing-highlights">
+                        <div class="highlight-badge">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span>Totally Free to Join</span>
+                        </div>
+                        <div class="highlight-badge">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 8V12L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span>Takes Less Than 1 Minute</span>
+                        </div>
+                    </div>
+
+                    <div class="landing-cta-stack">
+                        <button class="btn-landing-cta" id="startSignupBtn">
+                            Get Started Now
+                        </button>
+
+                        <div class="landing-login-section">
+                            <span class="landing-login-text">Already have an account?</span>
+                            <a href="https://stasher.tapfiliate.com/login" class="landing-login-link" target="_self">Login</a>
+                        </div>
+
+                        <div class="text-pill">
+                            Built for Airbnb hosts, travel blogs, venues, transportation companies, property managers, digital travel apps, city guides, events, and more.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="landing-features">
+                    <h2 class="features-title">Why should you join the program?</h2>
+                    
+                    <div class="features-grid">
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M4 16L10 10L13 13L20 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M20 11V6H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M4 20H20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <h3 class="feature-title">Extra Revenue Stream</h3>
+                            <p class="feature-description">Receive 10% commission for every booking you generate via your referral link.</p>
+                        </div>
+
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M7 10V20H5C3.89543 20 3 19.1046 3 18V12C3 10.8954 3.89543 10 5 10H7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M7 20H17C18.1046 20 19 19.1046 19 18V12C19 10.8954 18.1046 10 17 10H13.5L14.2 7.4C14.3565 6.8076 14.2163 6.17251 13.8232 5.70951C13.43 5.24651 12.8353 5 12.2143 5H10L7 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <h3 class="feature-title">Customer Satisfaction</h3>
+                            <p class="feature-description">Provide your guests or clients with a helpful service and make them happy.</p>
+                        </div>
+
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M21 10C21 17 12 23 12 23C12 23 3 17 3 10C3 7.61305 3.94821 5.32387 5.63604 3.63604C7.32387 1.94821 9.61305 1 12 1C14.3869 1 16.6761 1.94821 18.364 3.63604C20.0518 5.32387 21 7.61305 21 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M12 13C13.6569 13 15 11.6569 15 10C15 8.34315 13.6569 7 12 7C10.3431 7 9 8.34315 9 10C9 11.6569 10.3431 13 12 13Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <h3 class="feature-title">Global Coverage</h3>
+                            <p class="feature-description">Stasher is live with thousands of locations in more than 1,190 cities globally.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-section" id="howItWorks">
+                    <h2 class="section-title">How does it work?</h2>
+                    <div class="timeline-steps">
+                        <div class="timeline-step">
+                            <div class="timeline-icon">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M5 4H19C20.1046 4 21 4.89543 21 6V18C21 19.1046 20.1046 20 19 20H5C3.89543 20 3 19.1046 3 18V6C3 4.89543 3.89543 4 5 4Z" stroke="#142e59" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M7 8H17" stroke="#142e59" stroke-width="2" stroke-linecap="round"/>
+                                    <path d="M7 12H13" stroke="#142e59" stroke-width="2" stroke-linecap="round"/>
+                                    <path d="M7 16H11" stroke="#142e59" stroke-width="2" stroke-linecap="round"/>
+                                    <path d="M15 15L17 17L20 13" stroke="#142e59" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <div class="timeline-content">
+                                <span class="timeline-badge">1</span>
+                                <h3>Sign up for free</h3>
+                                <p>Create your account in under a minute. Just fill out the form and you’re ready to go. You can also book a free demo call.</p>
+                            </div>
+                        </div>
+                        <div class="timeline-step">
+                            <div class="timeline-icon">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M4 5H20C21.1046 5 22 5.89543 22 7V17C22 18.1046 21.1046 19 20 19H4C2.89543 19 2 18.1046 2 17V7C2 5.89543 2.89543 5 4 5Z" stroke="#142e59" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M22 7L12 13L2 7" stroke="#142e59" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <div class="timeline-content">
+                                <span class="timeline-badge">2</span>
+                                <h3>Receive your link</h3>
+                                <p>We’ll send you your referral link, custom discount code, and dashboard login details. Everything you need is stored in your dashboard.</p>
+                            </div>
+                        </div>
+                        <div class="timeline-step">
+                            <div class="timeline-icon">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M4 12V20H12" stroke="#142e59" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M20 12V4H12" stroke="#142e59" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M4 12L9 7" stroke="#142e59" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M20 12L15 17" stroke="#142e59" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M9 7H12" stroke="#142e59" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M15 17H12" stroke="#142e59" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <div class="timeline-content">
+                                <span class="timeline-badge">3</span>
+                                <h3>Share Stasher</h3>
+                                <p>Share your link with your customers through messages, guides, emails or FAQs. Wherever you communicate, it works.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="section-cta-wrapper">
+                        <button class="btn-landing-cta" id="getStartedHowItWorks">
+                            Get started now
+                        </button>
+                    </div>
+                </div>
+
+                <div class="media-section">
+                    <div class="media-header">
+                        <p class="media-label">Stasher in the Media</p>
+                        <h2 class="media-title">Trusted by the travel industry's leading voices</h2>
+                        <p class="media-subtitle">Leading outlets highlight how Stasher helps hosts, property managers, and venues offer seamless baggage storage.</p>
+                    </div>
+                    <div class="media-logos">
+                        <a class="media-logo-link" href="https://forbes.es/lifestyle/248690/este-es-el-ranking-de-los-mejores-y-peores-lugares-turisticos/" target="_blank" rel="noopener">
+                            <img src="assets/media/forbes-logo.webp" alt="Forbes logo">
+                        </a>
+                        <a class="media-logo-link" href="https://www.bbc.co.uk/news/business-38211628" target="_blank" rel="noopener">
+                            <img src="assets/media/bbc-logo.webp" alt="BBC logo">
+                        </a>
+                        <a class="media-logo-link" href="https://techcrunch.com/2020/01/21/more-funding-stashed/" target="_blank" rel="noopener">
+                            <img src="assets/media/techcrunch-logo.webp" alt="TechCrunch logo">
+                        </a>
+                        <a class="media-logo-link" href="https://nypost.com/2023/09/25/worst-rated-tourist-sites-across-the-globe-revealed/" target="_blank" rel="noopener">
+                            <img src="assets/media/newyorkpost-logo.webp" alt="New York Post logo">
+                        </a>
+                        <a class="media-logo-link" href="https://www.businesstraveller.com/business-travel/luggage-storage-service-launches-across-uk/" target="_blank" rel="noopener">
+                            <img src="assets/media/businesstraveller-logo.webp" alt="Business Traveller logo">
+                        </a>
+                    </div>
+                    <div class="media-cards">
+                        <div class="media-card">
+                            <p class="media-quote">“A simple way for hospitality brands to add a valuable guest benefit.”</p>
+                            <span class="media-source">— Forbes</span>
+                        </div>
+                        <div class="media-card">
+                            <p class="media-quote">“Stasher bridges the gap between travelers and local businesses in minutes.”</p>
+                            <span class="media-source">— TechCrunch</span>
+                        </div>
+                        <div class="media-card">
+                            <p class="media-quote">“Hosts boost revenue while keeping their guests delighted and stress-free.”</p>
+                            <span class="media-source">— BBC Travel</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="locations-cta">
+                    <div class="locations-cta-content">
+                        <div class="locations-info">
+                            <div class="locations-icon">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="11" cy="11" r="7" stroke="#142e59" stroke-width="2"></circle>
+                                    <path d="M16.5 16.5L20 20" stroke="#142e59" stroke-width="2" stroke-linecap="round"></path>
+                                </svg>
+                            </div>
+                            <h3>Check our locations</h3>
+                            <p>Find secure luggage storage near you in just a few clicks.</p>
+                            <a class="btn-landing-cta" id="viewLocationsBtn" href="https://stasher.com/luggage-storage" target="_blank" rel="noopener">
+                                View locations
+                            </a>
+                        </div>
+
+                        <div class="locations-benefits">
+                            <div class="benefit-badges">
+                                <span class="benefit-badge">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M20 6L9 17L4 12" stroke="#142e59" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                    Secure &amp; convenient locations
+                                </span>
+                                <span class="benefit-badge">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M20 6L9 17L4 12" stroke="#142e59" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                    Millions of bags stored safely
+                                </span>
+                                <span class="benefit-badge">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M20 6L9 17L4 12" stroke="#142e59" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                    Excellent reviews
+                                </span>
+                                <span class="benefit-badge">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M20 6L9 17L4 12" stroke="#142e59" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                    Available 24/7
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="section-cta-wrapper">
+                        <button class="btn-landing-cta" id="getStartedLocations">
+                            Get started now
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="progress-container" id="progressContainer" style="display: none;">
+            <div class="progress-bar">
+                <div class="progress-step" data-step="1">
+                    <div class="step-circle active">1</div>
+                    <span class="step-label">Program</span>
+                </div>
+                <div class="progress-line"></div>
+                <div class="progress-step" data-step="2">
+                    <div class="step-circle">2</div>
+                    <span class="step-label">Company Type</span>
+                </div>
+                <div class="progress-line"></div>
+                <div class="progress-step" data-step="3">
+                    <div class="step-circle">3</div>
+                    <span class="step-label">Personal Info</span>
+                </div>
+                <div class="progress-line"></div>
+                <div class="progress-step" data-step="4">
+                    <div class="step-circle">4</div>
+                    <span class="step-label">Company Details</span>
+                </div>
+                <div class="progress-line"></div>
+                <div class="progress-step" data-step="5">
+                    <div class="step-circle">5</div>
+                    <span class="step-label">Final Step</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Container -->
+        <div class="form-container" id="formContainer" style="display: none;">
+            <!-- Page 1: Program Selection -->
+            <div class="form-page active" id="page1">
+                <h1 class="page-title">Choose your preferred currency</h1>
+                
+                <div class="currency-grid">
+                    <div class="currency-box" data-currency="USD">
+                        <div class="currency-icon">$</div>
+                        <div class="currency-name">US Dollar</div>
+                    </div>
+                    <div class="currency-box" data-currency="EUR">
+                        <div class="currency-icon">€</div>
+                        <div class="currency-name">Euro</div>
+                    </div>
+                    <div class="currency-box" data-currency="GBP">
+                        <div class="currency-icon">£</div>
+                        <div class="currency-name">British Pound</div>
+                    </div>
+                    <div class="currency-box" data-currency="AUD">
+                        <div class="currency-icon">A$</div>
+                        <div class="currency-name">Australian Dollar</div>
+                    </div>
+                </div>
+
+                <div class="button-container">
+                    <button type="button" class="btn-back" id="backBtn1">Back to Home</button>
+                    <button type="button" class="btn-continue" id="continueBtn1" disabled>
+                        Continue
+                    </button>
+                </div>
+            </div>
+
+            <!-- Page 2: Company Type -->
+            <div class="form-page" id="page2">
+                <h1 class="page-title">What Type of Company Are You?</h1>
+                <p class="page-subtitle">Select the option that best describes your business</p>
+                
+                <div class="company-type-grid">
+                    <div class="company-type-box" data-type="supply">
+                        <div class="company-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 7H4C2.9 7 2 7.9 2 9V19C2 20.1 2.9 21 4 21H20C21.1 21 22 20.1 22 19V9C22 7.9 21.1 7 20 7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M16 21V5C16 4.5 15.5 4 15 4H9C8.5 4 8 4.5 8 5V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div class="company-type-title">I want to store bags (Supply)</div>
+                        <div class="company-type-desc">Store bags and earn money for every bag you store.</div>
+                    </div>
+                    <div class="company-type-box" data-type="vacation-rental">
+                        <div class="company-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M9 22V12H15V22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div class="company-type-title">Vacation Rental / STR / Airbnb Host</div>
+                        <div class="company-type-desc">Short-term rental property management and Airbnb Hosts.</div>
+                    </div>
+                    <div class="company-type-box" data-type="pms">
+                        <div class="company-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M21 16V8C20.9996 7.64928 20.9071 7.30481 20.7315 7.00116C20.556 6.69751 20.3037 6.44536 20 6.27L13 2.27C12.696 2.09446 12.3511 2.00205 12 2.00205C11.6489 2.00205 11.304 2.09446 11 2.27L4 6.27C3.69626 6.44536 3.44398 6.69751 3.26846 7.00116C3.09294 7.30481 3.00036 7.64928 3 8V16C3.00036 16.3507 3.09294 16.6952 3.26846 16.9988C3.44398 17.3025 3.69626 17.5546 4 17.73L11 21.73C11.304 21.9055 11.6489 21.9979 12 21.9979C12.3511 21.9979 12.696 21.9055 13 21.73L20 17.73C20.3037 17.5546 20.556 17.3025 20.7315 16.9988C20.9071 16.6952 20.9996 16.3507 21 16Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M3.27002 6.96L12 12.01L20.73 6.96" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M12 22.08V12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div class="company-type-title">PMS</div>
+                        <div class="company-type-desc">Property Management System provider</div>
+                    </div>
+                    <div class="company-type-box" data-type="venue">
+                        <div class="company-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M3 21H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M5 21V7L12 3L19 7V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M9 9V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M15 9V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M9 9H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M12 3V9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <circle cx="12" cy="13" r="1" fill="currentColor"/>
+                            </svg>
+                        </div>
+                        <div class="company-type-title">Venue</div>
+                        <div class="company-type-desc">Museums, Stadiums, Theatres, Musical Events, etc.</div>
+                    </div>
+                    <div class="company-type-box" data-type="blog">
+                        <div class="company-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M14 2V8H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M16 13H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M16 17H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M10 9H9H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div class="company-type-title">Blog</div>
+                        <div class="company-type-desc">Travel blog or content creator</div>
+                    </div>
+                    <div class="company-type-box" data-type="other">
+                        <div class="company-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M12 8V12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M12 16H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div class="company-type-title">Other</div>
+                        <div class="company-type-desc">Other business type</div>
+                    </div>
+                </div>
+
+                <div class="button-container">
+                    <button type="button" class="btn-back" id="backBtn2">Back</button>
+                    <button type="button" class="btn-continue" id="continueBtn2" disabled>
+                        Continue
+                    </button>
+                </div>
+            </div>
+
+            <!-- Page 3: Personal Information -->
+            <div class="form-page" id="page3">
+                <h1 class="page-title">Personal Information</h1>
+                <p class="page-subtitle">Tell us about yourself</p>
+                
+                <div class="form-row">
+                    <div class="form-group form-group-half">
+                    <label for="firstName">First Name *</label>
+                        <input type="text" id="firstName" name="firstName" placeholder="Enter your first name" required>
+                </div>
+
+                    <div class="form-group form-group-half">
+                    <label for="lastName">Last Name *</label>
+                        <input type="text" id="lastName" name="lastName" placeholder="Enter your last name" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email *</label>
+                    <input type="email" id="email" name="email" placeholder="your.email@example.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password *</label>
+                    <input type="password" id="password" name="password" placeholder="Enter a secure password" required minlength="8">
+                    <small class="form-hint">Minimum 8 characters</small>
+                </div>
+
+                <div class="terms-container">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="acceptTerms" required>
+                        <span class="checkmark"></span>
+                        <span class="checkbox-text">I accept the <a href="#" class="terms-link" id="termsLink">Terms & Conditions</a> *</span>
+                    </label>
+                </div>
+
+                <div class="button-container">
+                    <button type="button" class="btn-back" id="backBtn3">Back</button>
+                    <button type="button" class="btn-continue" id="continueBtn3" disabled>
+                        Continue
+                    </button>
+                </div>
+            </div>
+
+            <!-- Page 4: Company Details (Conditional) -->
+            <div class="form-page" id="page4">
+                <h1 class="page-title">Company Details</h1>
+                <p class="page-subtitle">Tell us about your company</p>
+                
+                <!-- Vacation Rental / STR / Airbnb Host Fields -->
+                <div id="vacationRentalFields" class="conditional-fields" style="display: none;">
+                    <div class="form-row">
+                        <div class="form-group form-group-half">
+                        <label for="city">City *</label>
+                            <input type="text" id="city" name="city" placeholder="e.g. London, New York, Paris" required>
+                    </div>
+
+                        <div class="form-group form-group-half">
+                        <label for="country">Country *</label>
+                            <div class="country-input-wrapper">
+                                <input type="text" id="country" name="country" class="country-input" list="countryOptions" placeholder="Start typing to find your country" autocomplete="off" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group form-group-half">
+                            <label for="companyName">Company Name *</label>
+                            <input type="text" id="companyName" name="companyName" placeholder="Enter your company name" required>
+                        </div>
+                        <div class="form-group form-group-half">
+                            <label for="commissionType">Commission type *</label>
+                            <select id="commissionType" name="commissionType" required>
+                                <option value="">Select commission type</option>
+                                <option value="10% commission">10% commission</option>
+                                <option value="10% discount code">10% discount code</option>
+                                <option value="Custom">Custom</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="companyWebsite">Company Website <span class="optional">(optional)</span></label>
+                        <input type="url" id="companyWebsite" name="companyWebsite" placeholder="https://www.example.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="numberOfProperties">Number of Properties <span class="optional">(optional, only for STRs)</span></label>
+                        <input type="number" id="numberOfProperties" name="numberOfProperties" placeholder="e.g. 5, 10, 20" min="1">
+                    </div>
+                </div>
+
+                <!-- PMS / Venue / Blog / Other Fields -->
+                <div id="otherFields" class="conditional-fields" style="display: none;">
+                    <div class="form-row">
+                        <div class="form-group form-group-half">
+                        <label for="city2">City *</label>
+                            <input type="text" id="city2" name="city2" placeholder="e.g. London, New York, Paris" required>
+                    </div>
+
+                        <div class="form-group form-group-half">
+                        <label for="country2">Country *</label>
+                            <div class="country-input-wrapper">
+                                <input type="text" id="country2" name="country2" class="country-input" list="countryOptions" placeholder="Start typing to find your country" autocomplete="off" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group form-group-half">
+                            <label for="companyName2">Company Name *</label>
+                            <input type="text" id="companyName2" name="companyName2" placeholder="Enter your company name" required>
+                        </div>
+                        <div class="form-group form-group-half">
+                            <label for="commissionType2">Commission type *</label>
+                            <select id="commissionType2" name="commissionType2" required>
+                                <option value="">Select commission type</option>
+                                <option value="10% commission">10% commission</option>
+                                <option value="10% discount code">10% discount code</option>
+                                <option value="Custom">Custom</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="companyDescription">Company Description <span class="optional">(optional)</span></label>
+                        <textarea id="companyDescription" name="companyDescription" rows="3" placeholder="Tell us about your company, what you do, and how you help your clients..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="companyWebsite2">Company Website <span class="optional">(optional)</span></label>
+                        <input type="url" id="companyWebsite2" name="companyWebsite2" placeholder="https://www.example.com">
+                    </div>
+                </div>
+
+                <datalist id="countryOptions">
+                    <!-- Countries populated by JavaScript -->
+                </datalist>
+
+                <div class="button-container">
+                    <button type="button" class="btn-back" id="backBtn4">Back</button>
+                    <button type="button" class="btn-continue" id="continueBtn4" disabled>
+                        Continue
+                    </button>
+                </div>
+            </div>
+
+            <!-- Page 5: Final Step -->
+            <div class="form-page" id="page5">
+                <h1 class="page-title">Final Step – Almost There!</h1>
+                <p class="page-subtitle">Book a free demo call to get personalized onboarding.</p>
+
+                <div class="demo-call-container">
+                    <div class="demo-call-cta">
+                        <div class="demo-call-icon">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M22 16.92V21C22 21.2652 21.8946 21.5196 21.7071 21.7071C21.5196 21.8946 21.2652 22 21 22C16.7513 21.7427 12.7499 19.9443 9.63604 16.864C6.52194 13.7825 4.25733 9.82721 4 5.62C4 5.35479 4.10536 5.10043 4.29289 4.91289C4.48043 4.72536 4.73479 4.62 5 4.62H8.09C8.34982 4.61996 8.5983 4.71407 8.79 4.885L10.89 6.735C11.0665 6.89061 11.1883 7.10277 11.2347 7.33923C11.2811 7.57569 11.2496 7.82094 11.145 8.039L10.21 9.939C11.394 12.1419 13.0591 13.9149 15.15 15.07L17.03 14.135C17.249 14.0304 17.4943 13.9989 17.7308 14.0453C17.9672 14.0917 18.1794 14.2135 18.335 14.39L20.115 16.5C20.286 16.6917 20.38 16.9402 20.38 17.2V20.3C20.38 20.5652 20.2746 20.8196 20.0871 21.0071C19.8996 21.1946 19.6452 21.3 19.38 21.3H17.2C16.9402 21.3001 16.6917 21.206 16.5 21.035" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div class="demo-call-text">
+                            <h2>Book a Demo Call</h2>
+                            <p>Get a free personalized onboarding and learn how to maximize your earnings with Stasher.</p>
+                        </div>
+                        <button type="button" class="btn-primary" id="bookDemoBtn">
+                            Book a Demo Call
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Summary Section -->
+                <div class="summary-container">
+                    <h3>Summary</h3>
+                    <div class="summary-content" id="summaryContent">
+                        <!-- Summary will be populated by JavaScript -->
+                    </div>
+                    </div>
+
+                    <div class="alternative-option">
+                        <a href="#" id="skipDemoLink" class="skip-demo-link">
+                            I don't want a demo call — I'll set up Stasher by myself
+                        </a>
+                    </div>
+
+                <div class="button-container">
+                    <button type="button" class="btn-back" id="backBtn5">Back</button>
+                </div>
+            </div>
+
+            <!-- Confirmation Page (shown after skipping demo) -->
+            <div class="form-page" id="confirmationPage" style="display: none;">
+                <div class="confirmation-content">
+                    <div class="confirmation-icon">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M20 6L9 17L4 12" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <h1 class="confirmation-title">Welcome to Stasher Partners!</h1>
+                    <p class="confirmation-subtitle">Your account has been successfully created.</p>
+                    
+                    <p class="confirmation-text">We've sent a confirmation email to:</p>
+                    <div class="confirmation-email-pill" id="confirmationEmailPill">
+                        <span id="confirmationEmail">your.email@example.com</span>
+                    </div>
+                    <p class="confirmation-instructions">
+                        This email contains your unique referral link and instructions for adding it to your guest communications.
+                    </p>
+                    <p class="confirmation-support">
+                        Need any help? Email <a href="mailto:partnerships@stasher.com">partnerships@stasher.com</a>
+                    </p>
+                    <div class="confirmation-actions">
+                        <a href="https://stasher.tapfiliate.com/login" class="btn-primary btn-dashboard" target="_self">Go to dashboard</a>
+                        <button type="button" class="btn-secondary" id="returnHomeBtn">Return home</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <div class="footer-column footer-brand">
+                <img src="white - horizontal.png" alt="Stasher Logo" class="footer-logo">
+                <p>Helping hospitality partners create effortless luggage storage experiences for their guests.</p>
+                <a href="mailto:partnerships@stasher.com" class="footer-contact">partnerships@stasher.com</a>
+            </div>
+            <div class="footer-column">
+                <h4>Program</h4>
+                <a href="#howItWorks">How it works</a>
+                <a href="#" id="footerStartSignup">Get started</a>
+                <a href="https://cal.com/periklis/15min" target="_blank">Book a demo</a>
+            </div>
+            <div class="footer-column">
+                <h4>Company</h4>
+                    <a href="https://stasher.com/about" target="_blank">About Stasher</a>
+                    <a href="https://stasher.com/becomeahost" target="_blank">I want to store bags</a>
+                <a href="https://blog.stasher.com" target="_blank">Blog</a>
+            </div>
+            <div class="footer-column">
+                <h4>Support</h4>
+                <a href="https://stasher.com/support" target="_blank">Help center</a>
+                <a href="https://stasher.com/support" target="_blank">Contact</a>
+                <a href="https://stasher.com/termsandconditions" target="_blank">Terms &amp; Conditions</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>© <span id="footerYear"></span> Stasher Ltd. All rights reserved.</span>
+            <div class="footer-socials">
+                <a href="https://www.linkedin.com/company/stasher/" target="_blank">LinkedIn</a>
+                <a href="https://www.instagram.com/stasherhq/" target="_blank">Instagram</a>
+                <a href="https://twitter.com/stasherhq" target="_blank">X</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Terms & Conditions Modal -->
+    <div class="terms-modal" id="termsModal">
+        <div class="terms-modal-overlay" id="termsModalOverlay"></div>
+        <div class="terms-modal-content">
+            <button class="terms-modal-close" id="termsModalClose">×</button>
+            <h2 class="terms-modal-title">Partnership Network Agreement – Terms and Conditions</h2>
+            <div class="terms-modal-body" id="termsModalBody">
+                <h3>PARTNERSHIP NETWORK AGREEMENT – TERMS AND CONDITIONS</h3>
+                
+                <h3>1. STASHER Partner Program and use of Partner Content</h3>
+                <p><strong>1.</strong> Partner understands and agrees that its participation in the STASHER Partnership Program is on an exclusive basis in the agreed markets.</p>
+                <p><strong>2.</strong> The Partner shall only use the Partner Content for the purpose of establishing Links to the Partner Site and promoting the Partner Site.</p>
+                <p><strong>3.</strong> The Partner shall only use the Stasher Content and the Links in a lawful manner and only in accordance with this Agreement. The Partner furthermore, agrees that neither The Partner nor any of its directors, officers, shareholders, members, employees, agents or representatives for whom The Partner maintains reasonable control, will corrupt, modify or disable the Links and/or Partner Content.</p>
+                
+                <h3>2. Payment, reporting and Payment Terms</h3>
+                <p><strong>1.</strong> From the Launch Date and subject to Partner acting in accordance with the terms of this Agreement, Stasher shall pay The Partner the Revenue Share for Qualifying Sales, calculated on a Net Revenue basis.</p>
+                <p><strong>2.</strong> Stasher shall provide The Partner with a report by the seventh business day of each calendar month showing for the precedent calendar month the number of Qualifying Sales based on Tracking Code activity and the calculation for and amount of Revenue Share due to The Partner.</p>
+                
+                <h3>3. Record keeping and audit</h3>
+                <p><strong>1.</strong> Partner shall during the Term and for 12 months thereafter maintain records relating to the calculation of the Revenue Share ("Records").</p>
+                
+                <h3>4. Intellectual Property and limited licence</h3>
+                <p><strong>1.</strong> Subject to Stasher's full compliance with this Agreement, Stasher grants to The Partner a limited, revocable, non-exclusive, non-transferable, non-sub-licenseable, royalty-free licence during the Term, to use, reproduce and display the Partner Content and the Partner IPR solely for the purpose of fulfilling its obligations under this Agreement. If this Agreement terminates for any reason, The Partner's right to use the Partner IPR shall end immediately.</p>
+                <p><strong>2.</strong> Each party reserves all rights, title and interest in its names, logos, trade and service marks, copyrights, patents, proprietary features, proprietary items and all IPR except as expressly permitted under this Agreement. All goodwill in the Partner Marks arising from their use under this Agreement shall be owned by Partner.</p>
+                
+                <h3>5. Indemnities</h3>
+                <p><strong>1.</strong> Either party ("Notifying Party") shall notify the other party ("Indemnifying Party") in writing, as soon as is reasonably practicable, of any claim about which the Notifying Party may be entitled to claim under the indemnity. The Notifying Party shall not make any admission or any offer to settle any claims without prior written consent from the Indemnifying Party. The Indemnifying Party shall have control of any claim, including the right to settle any claim on terms as it considers appropriate in its sole discretion. The Notifying Party shall co-operate fully in the defence of any claim, including by providing any relevant information or documents.</p>
+                
+                <h3>6. Limitation of Liability</h3>
+                <p><strong>1.</strong> Nothing in this Agreement shall exclude or limit liability for fraud or for any other liability that cannot be excluded or limited by law.</p>
+                <p><strong>2.</strong> Except as provided in Clause 11.3 below, the total liability of either party to the other for loss or damage under or in connection with this Agreement shall be the Revenue Share actually paid by Partner pursuant to this Agreement in the twelve months immediately preceding the incurring of such loss or damage.</p>
+                <p><strong>3.</strong> Neither party shall be liable to the other under or in connection with this Agreement for any loss of business, contracts, profits, anticipated savings or data, or for damage to hardware and software, or for any indirect, special or consequential loss.</p>
+                
+                <h3>7. Termination</h3>
+                <p><strong>1.</strong> Either party may terminate this Agreement by notice in writing to the other party of at least the required Notice Period (two months), such notice not to expire before the end of the Initial Term.</p>
+                
+                <h3>8. Governing Law</h3>
+                <p><strong>1.</strong> This Agreement is governed by and shall be construed in accordance with English law and we and you each submit to the jurisdiction of the English courts.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

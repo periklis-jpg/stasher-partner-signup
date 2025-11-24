@@ -1,0 +1,21 @@
+{
+  "name": "stasher-partner-signup",
+  "version": "1.0.0",
+  "description": "Stasher Partner Sign-Up Page with Tapfiliate Integration",
+  "scripts": {
+    "start": "lite-server",
+    "dev": "netlify dev"
+  },
+  "keywords": [
+    "stasher",
+    "partner",
+    "signup",
+    "tapfiliate"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "lite-server": "^2.6.1"
+  }
+}
+
