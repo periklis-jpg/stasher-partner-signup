@@ -65,10 +65,8 @@ const formState = {
 let createdAffiliateId = null;
 
 // Backend API Endpoint
-// This points to your AWS Amplify API endpoint
-// For AWS Amplify, the endpoint is: /api/create-affiliate
-// If you're using a custom API Gateway URL, replace this with your full API Gateway endpoint
-const BACKEND_API_URL = '/api/create-affiliate';
+// This points to your AWS API Gateway endpoint
+const BACKEND_API_URL = 'https://3cw7ssdjuh.execute-api.eu-north-1.amazonaws.com/prod/create-affiliate';
 
 // Map program currency to Tapfiliate Program ID
 // These are the actual program IDs from your Tapfiliate dashboard
