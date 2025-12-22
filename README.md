@@ -117,7 +117,7 @@ The form integrates with Tapfiliate API via a secure serverless function to:
 ### How It Works
 
 1. **Frontend** (`script.js`): Collects form data and sends to backend
-2. **Backend** (`netlify/functions/create-affiliate.js` or `vercel/api/create-affiliate.js`):
+2. **Backend** (`amplify/backend/function/createAffiliate/src/index.js`):
    - Securely stores API key (never exposed to client)
    - Creates affiliate via `POST /affiliates/`
    - Adds affiliate to program via `POST /programs/{program_id}/affiliates/`
@@ -184,4 +184,3 @@ The progress bar colors match the reference image. You can customize colors in `
 
 For Tapfiliate API documentation, visit:
 https://tapfiliate.com/docs/rest/
-
