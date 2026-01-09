@@ -1380,12 +1380,25 @@ function setupEventListeners() {
     // Continue Button 3
     document.getElementById('continueBtn3').addEventListener('click', async function() {
         if (validatePage3()) {
+            const continueBtn = document.getElementById('continueBtn3');
+            const originalText = continueBtn.textContent;
+            
+            // Show loading state
+            continueBtn.disabled = true;
+            continueBtn.classList.add('loading');
+            continueBtn.textContent = 'Creating account...';
+            
             // Stage A: Create affiliate immediately after Page 3
             try {
                 await createAffiliateAfterPage3();
             } catch (error) {
                 console.error('Error creating affiliate after Page 3:', error);
                 // Do not block the flow; final submission will fall back to legacy behavior
+            } finally {
+                // Hide loading state
+                continueBtn.classList.remove('loading');
+                continueBtn.textContent = originalText;
+                continueBtn.disabled = false;
             }
             nextPage();
         }
@@ -1403,11 +1416,25 @@ function setupEventListeners() {
     // Continue Button 4
     document.getElementById('continueBtn4').addEventListener('click', async function() {
         if (validatePage4()) {
+            const continueBtn = document.getElementById('continueBtn4');
+            const originalText = continueBtn.textContent;
+            
+            // Show loading state
+            continueBtn.disabled = true;
+            continueBtn.classList.add('loading');
+            continueBtn.textContent = 'Updating...';
+            
             // Update commission type immediately when Continue is clicked
             try {
                 await updateCommissionTypeAfterPage4();
             } catch (error) {
                 console.error('Error updating commission type after Page 4:', error);
+            } finally {
+                // Hide loading state
+                continueBtn.classList.remove('loading');
+                continueBtn.textContent = originalText;
+                continueBtn.disabled = false;
+            }
                 // Don't block the flow
             }
             nextPage();
