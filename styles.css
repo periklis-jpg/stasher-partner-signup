@@ -5,6 +5,53 @@
     box-sizing: border-box;
 }
 
+/* Loading Overlay Styles */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.9);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    backdrop-filter: blur(2px);
+}
+
+.loading-overlay.active {
+    display: flex;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #4A90E2;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+    margin-top: 20px;
+    color: #4A90E2;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.loading-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
 html {
     margin: 0;
     padding: 0;
@@ -2562,65 +2609,6 @@ button, .currency-box, .company-type-box {
     height: 100%;
     min-height: 60vh;
     border: none;
-}
-
-/* Loading Spinner Styles */
-.loading-spinner {
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    border: 3px solid rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    border-top-color: #fff;
-    animation: spin 0.8s linear infinite;
-    margin-right: 10px;
-    vertical-align: middle;
-}
-
-.loading-spinner-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(242, 248, 254, 0.8);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-    backdrop-filter: blur(2px);
-}
-
-.loading-spinner-large {
-    width: 50px;
-    height: 50px;
-    border: 4px solid rgba(74, 144, 226, 0.2);
-    border-top-color: #4A90E2;
-    margin: 0;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-.btn-continue.loading {
-    position: relative;
-    color: transparent;
-    pointer-events: none;
-}
-
-.btn-continue.loading::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 20px;
-    height: 20px;
-    border: 3px solid rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    border-top-color: #fff;
-    animation: spin 0.8s linear infinite;
 }
 
 .terms-modal-body h3 {
