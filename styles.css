@@ -5,53 +5,6 @@
     box-sizing: border-box;
 }
 
-/* Loading Overlay Styles */
-.loading-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(255, 255, 255, 0.9);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 10000;
-    backdrop-filter: blur(2px);
-}
-
-.loading-overlay.active {
-    display: flex;
-}
-
-.loading-spinner {
-    width: 50px;
-    height: 50px;
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid #4A90E2;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-.loading-text {
-    margin-top: 20px;
-    color: #4A90E2;
-    font-size: 16px;
-    font-weight: 500;
-}
-
-.loading-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
-
 html {
     margin: 0;
     padding: 0;
@@ -174,6 +127,32 @@ body {
     background-position: right center;
     padding-right: 20px;
     padding-left: 8px;
+}
+
+/* Mobile tweaks for language selector */
+@media (max-width: 480px) {
+  .header-inner {
+    padding: 12px 12px;
+  }
+
+  .header-right {
+    gap: 8px;
+  }
+
+  .language-selector-wrapper {
+    padding: 6px 10px;
+    min-width: auto;
+  }
+
+  .language-flag {
+    font-size: 16px;
+  }
+
+  .language-select {
+    font-size: 13px;
+    padding-right: 20px;
+    background-position: right 4px center;
+  }
 }
 
 .language-select option {
