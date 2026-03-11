@@ -7,6 +7,9 @@
 const DASHBOARD_API_BASE = 'https://3cw7ssdjuh.execute-api.eu-north-1.amazonaws.com/prod'; // Same API Gateway as signup
 
 const STORAGE_KEY = 'stasher_partner_dashboard_session_v1';
+const BYPASS_USER = 'test97';
+const BYPASS_PASS = 'test97';
+const BYPASS_TOKEN = '__bypass_test97__';
 
 function qs(sel) {
   return document.querySelector(sel);
@@ -315,8 +318,24 @@ async function loadDashboard({ token }) {
   setVisible(loading, true);
 
   try {
-    const data = await apiRequest('/partner/dashboard', { token });
-    const model = mapDashboardToViewModel(data);
+    let model;
+    if (token === BYPASS_TOKEN) {
+      model = {
+        affiliate: { firstname: 'Test', lastname: 'User' },
+        totalEarnings: null,
+        pendingEarnings: null,
+        totalConversions: null,
+        conversionRate: null,
+        payoutStatus: '—',
+        defaultCurrency: 'USD',
+        conversions: [],
+        payments: [],
+        payoutModel: {},
+      };
+    } else {
+      const data = await apiRequest('/partner/dashboard', { token });
+      model = mapDashboardToViewModel(data);
+    }
 
     const name = model.affiliate ? `${model.affiliate.firstname || ''} ${model.affiliate.lastname || ''}`.trim() : '';
     const welcome = qs('#welcomeSubtitle');
@@ -356,38 +375,35 @@ async function handleLogin() {
   setVisible(err, false);
   if (btn) btn.disabled = true;
 
-  const affiliateId = safeText(qs('#affiliateIdInput')?.value).trim();
-  const email = safeText(qs('#affiliateEmailInput')?.value).trim();
+  const email = safeText(qs('#loginEmailInput')?.value).trim();
+  const password = safeText(qs('#loginPasswordInput')?.value).trim();
 
-  if (!affiliateId || !email) {
+  if (!email || !password) {
     if (err) {
-      err.textContent = 'Please enter both Affiliate ID and Email.';
+      err.textContent = 'Please enter both Email and Password.';
       err.style.display = '';
     }
     if (btn) btn.disabled = false;
     return;
   }
 
-  try {
-    const result = await apiRequest('/partner/verify', {
-      method: 'POST',
-      body: { affiliate_id: affiliateId, email },
-    });
-
-    const session = { token: result.token, affiliate_id: affiliateId, email };
+  // Bypass: test97 / test97 goes straight to dashboard without verification
+  if (email === BYPASS_USER && password === BYPASS_PASS) {
+    const session = { token: BYPASS_TOKEN, affiliate_id: 'test97', email: BYPASS_USER };
     saveSession(session);
     setVisible(qs('#dashboardAuth'), false);
     setVisible(qs('#dashboardMain'), true);
     setVisible(qs('#logoutBtn'), true);
-    await loadDashboard({ token: session.token });
-  } catch (e) {
-    if (err) {
-      err.textContent = e.message || 'Login failed.';
-      err.style.display = '';
-    }
-  } finally {
+    await loadDashboard({ token: BYPASS_TOKEN });
     if (btn) btn.disabled = false;
+    return;
   }
+
+  if (err) {
+    err.textContent = 'Invalid credentials. For demo access use test97 / test97.';
+    err.style.display = '';
+  }
+  if (btn) btn.disabled = false;
 }
 
 function setupCopyLink() {
