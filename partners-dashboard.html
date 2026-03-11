@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Partners Dashboard - Stasher</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Reuse the same header -->
+    <header class="header">
+        <div class="header-inner">
+            <div class="logo-container">
+                <a href="index.html" class="logo-link" id="logoLink">
+                    <img src="white - horizontal.png" alt="Stasher Logo" class="logo" id="logo">
+                </a>
+            </div>
+            <div class="header-right">
+                <div class="language-selector-wrapper">
+                    <span class="language-flag" id="currentLanguageFlag">🇬🇧</span>
+                    <select id="languageSelect" class="language-select">
+                        <option value="en" data-flag="🇬🇧">English</option>
+                        <option value="de" data-flag="🇩🇪">German</option>
+                        <option value="fr" data-flag="🇫🇷">Français</option>
+                        <option value="es" data-flag="🇪🇸">Español</option>
+                        <option value="it" data-flag="🇮🇹">Italiano</option>
+                    </select>
+                </div>
+                <button type="button" class="btn-secondary" id="logoutBtn" style="display:none;">Log out</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container dashboard-container">
+        <!-- Login / Verify section -->
+        <section class="dashboard-auth" id="dashboardAuth">
+            <div class="dashboard-card">
+                <h1 class="dashboard-title">Partners Dashboard</h1>
+                <p class="dashboard-subtitle">Log in to view your affiliate link, earnings, and payouts.</p>
+
+                <div class="dashboard-form">
+                    <div class="form-group">
+                        <label class="form-label" for="affiliateIdInput">Affiliate ID</label>
+                        <input class="form-input" id="affiliateIdInput" type="text" inputmode="text" autocomplete="off" placeholder="Example: janejameson">
+                        <p class="form-hint">This is the ID you see in Tapfiliate emails or approval messages.</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="affiliateEmailInput">Email</label>
+                        <input class="form-input" id="affiliateEmailInput" type="email" autocomplete="email" placeholder="your@email.com">
+                        <p class="form-hint">We use this to confirm the affiliate ID belongs to you.</p>
+                    </div>
+
+                    <div class="dashboard-form-actions">
+                        <button type="button" class="btn-primary" id="dashboardLoginBtn">Log in</button>
+                        <a class="btn-link" href="index.html">Back to signup</a>
+                    </div>
+                </div>
+
+                <div class="dashboard-inline-alert dashboard-inline-alert--error" id="authError" style="display:none;"></div>
+            </div>
+        </section>
+
+        <!-- Dashboard section -->
+        <section class="dashboard" id="dashboardMain" style="display:none;">
+            <div class="dashboard-header">
+                <div>
+                    <h1 class="dashboard-title">Partners Dashboard</h1>
+                    <p class="dashboard-subtitle" id="welcomeSubtitle"></p>
+                </div>
+            </div>
+
+            <!-- Top info cards -->
+            <div class="dashboard-top-cards">
+                <a class="dashboard-mini-card" href="#resources" id="cardMaxEarnings">
+                    <div class="dashboard-mini-card-title">How to maximize your earnings</div>
+                    <div class="dashboard-mini-card-text">Best practices and quick tips.</div>
+                </a>
+                <a class="dashboard-mini-card" href="#resources" id="cardResources">
+                    <div class="dashboard-mini-card-title">Partner resources</div>
+                    <div class="dashboard-mini-card-text">Logos, templates, and links.</div>
+                </a>
+                <a class="dashboard-mini-card" href="#payout" id="cardPayout">
+                    <div class="dashboard-mini-card-title">Payout status</div>
+                    <div class="dashboard-mini-card-text" id="payoutStatusText">Check your payout setup.</div>
+                </a>
+            </div>
+
+            <!-- Affiliate link -->
+            <div class="dashboard-card dashboard-card--prominent">
+                <div class="dashboard-card-header">
+                    <div>
+                        <h2 class="dashboard-card-title">Your affiliate link</h2>
+                        <p class="dashboard-card-subtitle">Share this link with your guests or clients so your referrals are tracked.</p>
+                    </div>
+                </div>
+
+                <div class="dashboard-affiliate-link">
+                    <input class="form-input" id="affiliateLinkInput" type="text" readonly>
+                    <button type="button" class="btn-secondary" id="copyAffiliateLinkBtn">Copy</button>
+                    <a class="btn-secondary" id="openAffiliateLinkBtn" href="#" target="_blank" rel="noopener">Open</a>
+                </div>
+                <div class="dashboard-inline-alert" id="copyToast" style="display:none;"></div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="dashboard-card">
+                <div class="dashboard-tabs" role="tablist" aria-label="Dashboard sections">
+                    <button type="button" class="dashboard-tab is-active" data-tab="overview" role="tab" aria-selected="true">Overview</button>
+                    <button type="button" class="dashboard-tab" data-tab="earnings" role="tab" aria-selected="false">Earning details</button>
+                    <button type="button" class="dashboard-tab" data-tab="payouts" role="tab" aria-selected="false">Payout details</button>
+                </div>
+
+                <div class="dashboard-tabpanes">
+                    <!-- Overview -->
+                    <div class="dashboard-tabpane" data-pane="overview">
+                        <div class="dashboard-kpis" id="kpiGrid"></div>
+
+                        <div class="dashboard-split">
+                            <div class="dashboard-subcard">
+                                <div class="dashboard-subcard-title">Recent conversions / commissions</div>
+                                <div class="dashboard-table-wrap">
+                                    <table class="dashboard-table" id="recentConversionsTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Order</th>
+                                                <th>Amount</th>
+                                                <th>Status</th>
+                                                <th>Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                                <div class="dashboard-empty" id="recentConversionsEmpty" style="display:none;">No conversions yet.</div>
+                            </div>
+
+                            <div class="dashboard-subcard">
+                                <div class="dashboard-subcard-title">Recent payouts / payments</div>
+                                <div class="dashboard-table-wrap">
+                                    <table class="dashboard-table" id="recentPaymentsTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Amount</th>
+                                                <th>Status</th>
+                                                <th>Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                                <div class="dashboard-empty" id="recentPaymentsEmpty" style="display:none;">No payouts yet.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Earnings -->
+                    <div class="dashboard-tabpane" data-pane="earnings" style="display:none;">
+                        <div class="dashboard-subcard">
+                            <div class="dashboard-subcard-title">Commissions / conversions</div>
+                            <div class="dashboard-table-wrap">
+                                <table class="dashboard-table" id="earningsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Order</th>
+                                            <th>Amount</th>
+                                            <th>Currency</th>
+                                            <th>Status</th>
+                                            <th>Created</th>
+                                            <th>Program</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                            <div class="dashboard-empty" id="earningsEmpty" style="display:none;">No earnings yet.</div>
+                            <div class="dashboard-load-more">
+                                <button type="button" class="btn-secondary" id="loadMoreEarningsBtn" style="display:none;">Load more</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payouts -->
+                    <div class="dashboard-tabpane" data-pane="payouts" style="display:none;">
+                        <div class="dashboard-subcard" id="payoutSetupCard">
+                            <div class="dashboard-subcard-title">Payout setup</div>
+                            <p class="dashboard-muted" id="payoutSetupText">Checking payout setup...</p>
+                            <a class="btn-primary" id="payoutSetupCta" href="#resources" style="display:none;">Set up payouts</a>
+                        </div>
+
+                        <div class="dashboard-subcard" id="payoutHistoryCard">
+                            <div class="dashboard-subcard-title">Past payouts</div>
+                            <div class="dashboard-table-wrap">
+                                <table class="dashboard-table" id="payoutHistoryTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Amount</th>
+                                            <th>Status</th>
+                                            <th>Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                            <div class="dashboard-empty" id="payoutHistoryEmpty" style="display:none;">No payouts yet.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-inline-alert dashboard-inline-alert--error" id="dashboardError" style="display:none;"></div>
+                <div class="dashboard-loading" id="dashboardLoading" style="display:none;">
+                    <div class="loading-spinner"></div>
+                    <div class="dashboard-loading-text">Loading your dashboard…</div>
+                </div>
+            </div>
+
+            <!-- Resources -->
+            <div class="dashboard-card" id="resources">
+                <h2 class="dashboard-card-title">Resources & support</h2>
+                <div class="dashboard-resources">
+                    <a class="dashboard-resource" href="#" id="marketingAssetsLink">Marketing assets</a>
+                    <a class="dashboard-resource" href="mailto:partnerships@stasher.com">Contact partnerships</a>
+                    <a class="dashboard-resource" href="#" id="helpCenterLink">Help center</a>
+                </div>
+                <p class="dashboard-muted">Need help? Email <a href="mailto:partnerships@stasher.com">partnerships@stasher.com</a>.</p>
+            </div>
+        </section>
+    </main>
+
+    <script src="partners-dashboard.js"></script>
+</body>
+</html>

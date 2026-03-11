@@ -1,0 +1,8 @@
+{
+  "name": "partner-dashboard",
+  "version": "1.0.0",
+  "description": "AWS Lambda wrapper for Tapfiliate partner dashboard",
+  "main": "src/index.js",
+  "license": "ISC"
+}
+
