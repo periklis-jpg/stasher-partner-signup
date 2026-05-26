@@ -40,6 +40,50 @@ if (document.readyState === 'loading') {
 // MLM PARENT ID TRACKING - END
 // ========================================
 
+// ========================================
+// LANGUAGE URL PARAMETER - START
+// ========================================
+
+const SUPPORTED_LANGUAGES = ['en', 'de', 'fr', 'es', 'it'];
+const DEFAULT_LANGUAGE = 'en';
+
+/**
+ * Read the language acronym from the URL (?lang=xx).
+ * Returns a supported language code or null if not present/invalid.
+ */
+function getLanguageFromURL() {
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const lang = (urlParams.get('lang') || '').toLowerCase();
+        return SUPPORTED_LANGUAGES.includes(lang) ? lang : null;
+    } catch (error) {
+        return null;
+    }
+}
+
+/**
+ * Update the current URL so it reflects the selected language.
+ * Uses replaceState so it does not pollute browser history and preserves
+ * any other params (e.g. via/parent_id).
+ */
+function updateLanguageInURL(language) {
+    try {
+        const url = new URL(window.location.href);
+        if (language && language !== DEFAULT_LANGUAGE && SUPPORTED_LANGUAGES.includes(language)) {
+            url.searchParams.set('lang', language);
+        } else {
+            url.searchParams.delete('lang');
+        }
+        window.history.replaceState({}, '', url.toString());
+    } catch (error) {
+        console.warn('Could not update language in URL:', error);
+    }
+}
+
+// ========================================
+// LANGUAGE URL PARAMETER - END
+// ========================================
+
 // Form State Management
 const formState = {
     currentPage: 1,
@@ -1083,6 +1127,10 @@ const htmlTranslationRegistry = [];
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
+    const urlLanguage = getLanguageFromURL();
+    if (urlLanguage) {
+        formState.language = urlLanguage;
+    }
     initializeLandingPage();
     initializeForm();
     populateCountries();
@@ -1366,7 +1414,12 @@ function setupEventListeners() {
     // Language Select
     const languageSelect = document.getElementById('languageSelect');
     const currentLanguageFlag = document.getElementById('currentLanguageFlag');
-    
+
+    // Sync the dropdown to the current language (e.g. when coming from ?lang=fr)
+    if (formState.language && languageSelect.value !== formState.language) {
+        languageSelect.value = formState.language;
+    }
+
     // Update flag when language changes
     languageSelect.addEventListener('change', function(e) {
         formState.language = e.target.value;
@@ -1376,8 +1429,9 @@ function setupEventListeners() {
             currentLanguageFlag.textContent = flag;
         }
         applyTranslations(formState.language);
+        updateLanguageInURL(formState.language);
     });
-    
+
     // Initialize flag on page load
     const initialOption = languageSelect.options[languageSelect.selectedIndex];
     const initialFlag = initialOption.getAttribute('data-flag');
