@@ -48,32 +48,47 @@ const SUPPORTED_LANGUAGES = ['en', 'de', 'fr', 'es', 'it'];
 const DEFAULT_LANGUAGE = 'en';
 
 /**
- * Read the language acronym from the URL (?lang=xx).
+ * Read the language acronym from the URL.
+ * Supports both path-based URLs (e.g. /it/) and the legacy ?lang=xx query param.
  * Returns a supported language code or null if not present/invalid.
  */
 function getLanguageFromURL() {
     try {
+        const pathSegment = (window.location.pathname.split('/').filter(Boolean)[0] || '').toLowerCase();
+        if (SUPPORTED_LANGUAGES.includes(pathSegment)) {
+            return pathSegment;
+        }
         const urlParams = new URLSearchParams(window.location.search);
-        const lang = (urlParams.get('lang') || '').toLowerCase();
-        return SUPPORTED_LANGUAGES.includes(lang) ? lang : null;
+        const queryLang = (urlParams.get('lang') || '').toLowerCase();
+        if (SUPPORTED_LANGUAGES.includes(queryLang)) {
+            return queryLang;
+        }
+        return null;
     } catch (error) {
         return null;
     }
 }
 
 /**
- * Update the current URL so it reflects the selected language.
- * Uses replaceState so it does not pollute browser history and preserves
- * any other params (e.g. via/parent_id).
+ * Update the current URL so it reflects the selected language as a path prefix
+ * (e.g. /it/). Default language uses the bare root (/). Uses replaceState so
+ * it does not pollute history and preserves any other params (e.g. via/parent_id).
  */
 function updateLanguageInURL(language) {
     try {
         const url = new URL(window.location.href);
-        if (language && language !== DEFAULT_LANGUAGE && SUPPORTED_LANGUAGES.includes(language)) {
-            url.searchParams.set('lang', language);
-        } else {
-            url.searchParams.delete('lang');
+
+        const segments = url.pathname.split('/').filter(Boolean);
+        if (segments.length && SUPPORTED_LANGUAGES.includes(segments[0].toLowerCase())) {
+            segments.shift();
         }
+        if (language && language !== DEFAULT_LANGUAGE && SUPPORTED_LANGUAGES.includes(language)) {
+            segments.unshift(language);
+        }
+        url.pathname = segments.length ? '/' + segments.join('/') + '/' : '/';
+
+        url.searchParams.delete('lang');
+
         window.history.replaceState({}, '', url.toString());
     } catch (error) {
         console.warn('Could not update language in URL:', error);
@@ -1137,7 +1152,28 @@ document.addEventListener('DOMContentLoaded', function() {
     setupEventListeners();
     setupProgressBarNavigation();
     initI18n();
+    setupInPageAnchorLinks();
 });
+
+/**
+ * Handle in-page #anchor links via JS scroll. Required because we set
+ * <base href="/"> in index.html so relative asset URLs work from /<lang>/
+ * paths, which would otherwise turn href="#section" into "/#section".
+ */
+function setupInPageAnchorLinks() {
+    document.querySelectorAll('a[href^="#"]').forEach(link => {
+        const rawHref = link.getAttribute('href');
+        if (!rawHref || rawHref === '#') return;
+        const targetId = rawHref.slice(1);
+        if (!targetId) return;
+        link.addEventListener('click', function(e) {
+            const target = document.getElementById(targetId);
+            if (!target) return;
+            e.preventDefault();
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    });
+}
 
 // Initialize Landing Page
 function initializeLandingPage() {
