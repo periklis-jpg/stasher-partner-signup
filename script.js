@@ -1,35 +1,145 @@
 // ========================================
 // MLM PARENT ID TRACKING - START
 // ========================================
+//
+// Goal: capture the affiliate referral ID (?via= or ?parent_id=) once and
+// keep it attached to the user across:
+//   - browser refreshes
+//   - new tabs / windows
+//   - link clicks that strip the query string
+//   - multi-day signup completion (30-day attribution window)
+//
+// Fallback chain at every read: URL > localStorage > empty.
+// Last-touch wins (a fresh ?via= overrides a stored one), matching the
+// industry default for affiliate programs.
+
+const PARENT_ID_STORAGE_KEY = 'stasher_partner_referral_v1';
+const PARENT_ID_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 
 /**
- * Extract URL parameter by name
- * Example: ?parent_id=marysmith returns "marysmith"
+ * Extract URL parameter by name. Returns null on any error.
  */
 function getURLParameter(name) {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get(name);
-}
-
-/**
- * Capture parent_id from URL on page load
- * Supports both 'via' (Tapfiliate convention) and 'parent_id' parameters
- * Runs automatically when page loads
- */
-function captureParentId() {
-    // Try 'via' first (Tapfiliate convention), then fallback to 'parent_id'
-    const parentId = getURLParameter('via') || getURLParameter('parent_id');
-    const parentIdField = document.getElementById('parent_id');
-
-    if (parentId && parentIdField) {
-        parentIdField.value = parentId;
-        console.log('✅ Parent ID captured from URL:', parentId);
-    } else {
-        console.log('ℹ️ No parent ID in URL - direct signup');
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const value = urlParams.get(name);
+        return value && value.trim() !== '' ? value.trim() : null;
+    } catch (error) {
+        return null;
     }
 }
 
-// Run on page load
+/**
+ * Read a previously stored parent_id from localStorage, respecting TTL.
+ */
+function readStoredParentId() {
+    try {
+        const raw = localStorage.getItem(PARENT_ID_STORAGE_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (!parsed || !parsed.parentId) return null;
+        if (parsed.expiresAt && Date.now() > parsed.expiresAt) {
+            localStorage.removeItem(PARENT_ID_STORAGE_KEY);
+            return null;
+        }
+        return String(parsed.parentId);
+    } catch (error) {
+        return null;
+    }
+}
+
+/**
+ * Persist parent_id to localStorage so it survives tab closes and refreshes.
+ * Safe to call repeatedly; last touch wins.
+ */
+function storeParentId(parentId) {
+    if (!parentId) return;
+    const value = String(parentId).trim();
+    if (!value || value === 'null' || value === 'undefined') return;
+    try {
+        localStorage.setItem(PARENT_ID_STORAGE_KEY, JSON.stringify({
+            parentId: value,
+            capturedAt: Date.now(),
+            expiresAt: Date.now() + PARENT_ID_TTL_MS,
+            source: window.location.href
+        }));
+    } catch (error) {
+        console.warn('[Tracking] Could not persist parent ID:', error);
+    }
+}
+
+/**
+ * Write the parent_id into the hidden form input so submit handlers pick it up.
+ * Returns true if a value was written.
+ */
+function applyParentIdToField(parentId) {
+    const parentIdField = document.getElementById('parent_id');
+    if (!parentIdField || !parentId) return false;
+    const value = String(parentId).trim();
+    if (!value) return false;
+    if (parentIdField.value !== value) {
+        parentIdField.value = value;
+    }
+    return true;
+}
+
+/**
+ * Resolve the best available parent_id RIGHT NOW. Called both on page load
+ * and at every form submit so we can never miss it. Order:
+ *   1. ?via= in current URL
+ *   2. ?parent_id= in current URL
+ *   3. localStorage (within 30-day window)
+ * If found, writes it to the hidden field AND refreshes the storage TTL.
+ */
+function resolveParentId() {
+    const urlParentId = getURLParameter('via') || getURLParameter('parent_id');
+    if (urlParentId) {
+        storeParentId(urlParentId);
+        applyParentIdToField(urlParentId);
+        return urlParentId;
+    }
+    const stored = readStoredParentId();
+    if (stored) {
+        applyParentIdToField(stored);
+        return stored;
+    }
+    return null;
+}
+
+/**
+ * Called on initial page load to capture and log the parent_id.
+ */
+function captureParentId() {
+    const urlParentId = getURLParameter('via') || getURLParameter('parent_id');
+    if (urlParentId) {
+        storeParentId(urlParentId);
+        applyParentIdToField(urlParentId);
+        console.log('[Tracking] Parent ID captured from URL:', urlParentId);
+        return;
+    }
+    const stored = readStoredParentId();
+    if (stored) {
+        applyParentIdToField(stored);
+        console.log('[Tracking] Parent ID restored from storage:', stored);
+        return;
+    }
+    console.log('[Tracking] No parent ID in URL or storage - direct signup');
+}
+
+// Eagerly store the URL value to localStorage BEFORE DOMContentLoaded, so even
+// if the user bounces immediately we still have the attribution for next visit.
+(function eagerStoreParentIdOnLoad() {
+    try {
+        const urlParentId = getURLParameter('via') || getURLParameter('parent_id');
+        if (urlParentId) {
+            storeParentId(urlParentId);
+        }
+    } catch (error) {
+        // swallow — eager pass must never break the page
+    }
+})();
+
+// Apply to the hidden field as soon as the DOM is ready.
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', captureParentId);
 } else {
@@ -2337,9 +2447,9 @@ async function createAffiliateAfterPage3() {
         return;
     }
 
-    // Get parent_id from hidden field if present
-    const parentIdField = document.getElementById('parent_id');
-    const parentId = parentIdField && parentIdField.value ? parentIdField.value.trim() : null;
+    // Resolve parent_id with full fallback chain (URL > localStorage > field)
+    const parentId = resolveParentId();
+    console.log('[Tracking] Stage A parent_id resolved to:', parentId || '(none)');
 
     // Build minimal payload for Stage A
     const payload = {
@@ -2511,10 +2621,11 @@ async function createTapfiliateAffiliate() {
             }
         };
 
-        // Pass parent_id for MLM if present in the hidden field
-        const parentIdField = document.getElementById('parent_id');
-        if (parentIdField && parentIdField.value && parentIdField.value.trim() !== '') {
-            payloadToSend.parent_id = parentIdField.value.trim();
+        // Resolve parent_id with full fallback chain (URL > localStorage > field)
+        const stageBParentId = resolveParentId();
+        console.log('[Tracking] Stage B parent_id resolved to:', stageBParentId || '(none)');
+        if (stageBParentId) {
+            payloadToSend.parent_id = stageBParentId;
         }
 
         // Add commission_type if available (for custom fields)
@@ -2566,10 +2677,11 @@ async function createTapfiliateAffiliate() {
         // Add wantsDemoCall if available (for custom fields)
         affiliatePayload.wantsDemoCall = formState.wantsDemoCall;
 
-        // Get parent_id from hidden field if present (for MLM functionality)
-        const parentIdField = document.getElementById('parent_id');
-        if (parentIdField && parentIdField.value && parentIdField.value.trim() !== '') {
-            affiliatePayload.parent_id = parentIdField.value.trim();
+        // Resolve parent_id with full fallback chain (URL > localStorage > field)
+        const legacyParentId = resolveParentId();
+        console.log('[Tracking] Legacy path parent_id resolved to:', legacyParentId || '(none)');
+        if (legacyParentId) {
+            affiliatePayload.parent_id = legacyParentId;
         }
 
         // Clean up undefined/null values
