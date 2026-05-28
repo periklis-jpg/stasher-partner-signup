@@ -193,11 +193,56 @@ function applyWhitelabelBranding(partner) {
         if (partner.logoPath) {
             replacePerfectForWithLogo(partner.logoPath, partner.code || 'Partner');
         }
+        if (partner.heroHeadline) {
+            overrideHeroText('#landingHeroTitle', partner.heroHeadline);
+        }
+        if (partner.heroSubtitle) {
+            overrideHeroText('.landing-subtitle', partner.heroSubtitle);
+        }
         if (partner.description) {
             replaceBuiltForWithDescription(partner);
         }
     } catch (error) {
         console.warn('[Whitelabel] Could not apply branding:', error);
+    }
+}
+
+/**
+ * Replace the text of a hero element and remove it from the i18n registry
+ * so a later language change does not undo the whitelabel override.
+ */
+function overrideHeroText(selector, text) {
+    const el = document.querySelector(selector);
+    if (!el) return;
+    el.textContent = text;
+    el.dataset.wlOverride = '1';
+    detachFromI18n(el);
+}
+
+/**
+ * Pull an element out of every translation cache so applyTranslations()
+ * stops touching it. Safe no-op if i18n hasn't initialised yet.
+ */
+function detachFromI18n(element) {
+    if (!element) return;
+    try {
+        if (typeof textTranslationRegistry !== 'undefined' && textTranslationRegistry) {
+            Object.keys(textTranslationRegistry).forEach(function (key) {
+                const list = textTranslationRegistry[key];
+                if (!Array.isArray(list)) return;
+                const idx = list.indexOf(element);
+                if (idx >= 0) list.splice(idx, 1);
+            });
+        }
+        if (typeof htmlTranslationRegistry !== 'undefined' && Array.isArray(htmlTranslationRegistry)) {
+            htmlTranslationRegistry.forEach(function (entry) {
+                if (!entry || !Array.isArray(entry.elements)) return;
+                const idx = entry.elements.indexOf(element);
+                if (idx >= 0) entry.elements.splice(idx, 1);
+            });
+        }
+    } catch (error) {
+        // best effort
     }
 }
 

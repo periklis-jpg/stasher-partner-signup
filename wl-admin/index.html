@@ -134,7 +134,30 @@
                 </div>
 
                 <div class="wl-form-row">
-                    <label for="wlPartnerTitle">Title <span class="wl-muted">(optional)</span></label>
+                    <label for="wlPartnerHeroHeadline">Hero headline <span class="wl-muted">(optional)</span></label>
+                    <input
+                        type="text"
+                        id="wlPartnerHeroHeadline"
+                        maxlength="160"
+                        placeholder="Join Stasher's Affiliate Program"
+                        autocomplete="off"
+                    >
+                    <small class="wl-muted">Replaces "Join Stasher's Affiliate Program" at the top of the page. Leave empty to keep the default (and auto-translate it).</small>
+                </div>
+
+                <div class="wl-form-row">
+                    <label for="wlPartnerHeroSubtitle">Hero subtitle <span class="wl-muted">(optional)</span></label>
+                    <textarea
+                        id="wlPartnerHeroSubtitle"
+                        rows="2"
+                        maxlength="320"
+                        placeholder="Help your guests or clients store their bags and receive extra revenue, higher customer satisfaction, and better reviews."
+                    ></textarea>
+                    <small class="wl-muted">Replaces the line under the headline. Same rule: empty = default.</small>
+                </div>
+
+                <div class="wl-form-row">
+                    <label for="wlPartnerTitle">Benefits title <span class="wl-muted">(optional)</span></label>
                     <input
                         type="text"
                         id="wlPartnerTitle"

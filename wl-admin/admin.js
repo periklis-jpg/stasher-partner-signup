@@ -52,6 +52,8 @@
     var savedLogoPreviewSrc = '';
     var $colorPicker = document.getElementById('wlPartnerColor');
     var $colorHex = document.getElementById('wlPartnerColorHex');
+    var $heroHeadline = document.getElementById('wlPartnerHeroHeadline');
+    var $heroSubtitle = document.getElementById('wlPartnerHeroSubtitle');
     var $titleField = document.getElementById('wlPartnerTitle');
     var $desc = document.getElementById('wlPartnerDescription');
     var $ctaUrl = document.getElementById('wlPartnerCtaUrl');
@@ -276,6 +278,8 @@
         if (!description) return Promise.reject(new Error('Description is required.'));
 
         var title = ($titleField.value || '').trim();
+        var heroHeadline = ($heroHeadline.value || '').trim();
+        var heroSubtitle = ($heroSubtitle.value || '').trim();
         var ctaUrl = ($ctaUrl.value || '').trim();
         var ctaLabel = ($ctaLabel.value || '').trim();
 
@@ -317,6 +321,8 @@
                 return upsertPartnersJson(cfg, code, {
                     code: code,
                     brandColor: color.toLowerCase(),
+                    heroHeadline: heroHeadline,
+                    heroSubtitle: heroSubtitle,
                     title: title,
                     description: description,
                     ctaUrl: ctaUrl,
@@ -363,6 +369,8 @@
         $code.value = code;
         $code.readOnly = true;
         $code.classList.add('wl-readonly');
+        $heroHeadline.value = partner.heroHeadline || '';
+        $heroSubtitle.value = partner.heroSubtitle || '';
         $titleField.value = partner.title || '';
         $desc.value = partner.description || '';
         $colorPicker.value = (partner.brandColor || '#142e59').toLowerCase();
