@@ -203,15 +203,17 @@ function applyWhitelabelBranding(partner) {
 
 function injectWhitelabelBrandStyles(brandColor) {
     if (document.getElementById('wlBrandStyles')) return;
+    const ctaText = getReadableTextColor(brandColor);
     const style = document.createElement('style');
     style.id = 'wlBrandStyles';
     style.textContent =
         'body.wl-branded .header{background-color:' + brandColor + ' !important;}' +
-        'body.wl-branded .btn-landing-cta{background:' + brandColor + ' !important;background-color:' + brandColor + ' !important;box-shadow:0 6px 25px ' + hexToRgba(brandColor, 0.45) + ' !important;}' +
-        'body.wl-branded .btn-landing-cta:hover{background:' + darkenHex(brandColor, 0.12) + ' !important;background-color:' + darkenHex(brandColor, 0.12) + ' !important;box-shadow:0 12px 40px ' + hexToRgba(brandColor, 0.55) + ' !important;}' +
+        'body.wl-branded .btn-landing-cta{background:' + brandColor + ' !important;background-color:' + brandColor + ' !important;color:' + ctaText + ' !important;box-shadow:0 6px 25px ' + hexToRgba(brandColor, 0.45) + ' !important;}' +
+        'body.wl-branded .btn-landing-cta:hover{background:' + darkenHex(brandColor, 0.12) + ' !important;background-color:' + darkenHex(brandColor, 0.12) + ' !important;color:' + ctaText + ' !important;box-shadow:0 12px 40px ' + hexToRgba(brandColor, 0.55) + ' !important;}' +
         'body.wl-branded .btn-landing-cta:active{box-shadow:0 2px 8px ' + hexToRgba(brandColor, 0.25) + ' !important;}' +
         '.wl-partner-logo{display:flex;align-items:center;justify-content:flex-start;margin:0 0 12px;}' +
-        '.wl-partner-logo img{max-height:64px;max-width:280px;width:auto;height:auto;object-fit:contain;}' +
+        '.wl-partner-logo img{max-height:54px;max-width:240px;width:auto;height:auto;object-fit:contain;}' +
+        '@media (max-width:600px){.wl-partner-logo{justify-content:center;}.wl-partner-logo img{max-height:44px;max-width:200px;}}' +
         '.wl-benefits{margin:32px 0;padding:28px;border-radius:18px;background:#fff;border:1px solid rgba(20,46,89,0.08);box-shadow:0 6px 28px rgba(20,46,89,0.06);}' +
         '.wl-benefits-title{margin:0 0 18px;font-size:20px;font-weight:700;color:#142e59;line-height:1.35;}' +
         '.wl-benefits-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px;}' +
@@ -222,6 +224,25 @@ function injectWhitelabelBrandStyles(brandColor) {
         '.wl-benefits-paragraph{margin:8px 0 0;font-size:16px;line-height:1.6;color:#142e59;white-space:pre-line;}' +
         '@media (max-width:600px){.wl-benefits{padding:22px;border-radius:14px;}.wl-benefits-title{font-size:18px;}.wl-benefits-text,.wl-benefits-paragraph{font-size:15px;}}';
     document.head.appendChild(style);
+}
+
+/**
+ * Returns either '#ffffff' or '#142e59' depending on which gives readable
+ * contrast on the supplied brand colour. Uses WCAG relative luminance.
+ * Keeps CTA labels legible if a partner picks a very light brand colour.
+ */
+function getReadableTextColor(hex) {
+    try {
+        const clean = hex.replace('#', '');
+        const r = parseInt(clean.slice(0, 2), 16) / 255;
+        const g = parseInt(clean.slice(2, 4), 16) / 255;
+        const b = parseInt(clean.slice(4, 6), 16) / 255;
+        const toLinear = function (c) { return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
+        const luminance = 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
+        return luminance > 0.55 ? '#142e59' : '#ffffff';
+    } catch (error) {
+        return '#ffffff';
+    }
 }
 
 function replacePerfectForWithLogo(logoSrc, altText) {
