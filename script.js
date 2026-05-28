@@ -151,6 +151,144 @@ if (document.readyState === 'loading') {
 // ========================================
 
 // ========================================
+// WHITELABEL BRANDING - START
+// ========================================
+//
+// When a visitor lands with ?via=CODE and CODE matches a saved partner in
+// /whitelabel/partners.json, apply exactly three cosmetic changes:
+//   1. Replace the "Perfect for [rotating word]" pill with the partner's logo.
+//   2. Recolor only the top header strip and the "Get started now" CTA(s).
+//   3. Replace the "Built for" company-types section with the partner's
+//      description, styled to look like a clean benefits panel.
+// If there is no ?via=, or the code is unknown, the page is left untouched.
+
+const WHITELABEL_PARTNERS_URL = '/whitelabel/partners.json';
+
+function getViaCodeFromURL() {
+    try {
+        const params = new URLSearchParams(window.location.search);
+        const value = params.get('via') || params.get('parent_id');
+        return value ? value.trim() : '';
+    } catch (error) {
+        return '';
+    }
+}
+
+function fetchWhitelabelPartners() {
+    return fetch(WHITELABEL_PARTNERS_URL, { cache: 'no-store' })
+        .then(function (response) {
+            if (!response.ok) return null;
+            return response.json();
+        })
+        .catch(function () { return null; });
+}
+
+function applyWhitelabelBranding(partner) {
+    if (!partner) return;
+    try {
+        document.body.classList.add('wl-branded');
+        if (partner.brandColor && /^#[0-9a-fA-F]{6}$/.test(partner.brandColor)) {
+            injectWhitelabelBrandStyles(partner.brandColor);
+        }
+        if (partner.logoPath) {
+            replacePerfectForWithLogo(partner.logoPath, partner.code || 'Partner');
+        }
+        if (partner.description) {
+            replaceBuiltForWithDescription(partner.description);
+        }
+    } catch (error) {
+        console.warn('[Whitelabel] Could not apply branding:', error);
+    }
+}
+
+function injectWhitelabelBrandStyles(brandColor) {
+    if (document.getElementById('wlBrandStyles')) return;
+    const style = document.createElement('style');
+    style.id = 'wlBrandStyles';
+    style.textContent =
+        'body.wl-branded .header{background-color:' + brandColor + ' !important;}' +
+        'body.wl-branded .btn-landing-cta{background:' + brandColor + ' !important;background-color:' + brandColor + ' !important;box-shadow:0 6px 25px ' + hexToRgba(brandColor, 0.45) + ' !important;}' +
+        'body.wl-branded .btn-landing-cta:hover{background:' + darkenHex(brandColor, 0.12) + ' !important;background-color:' + darkenHex(brandColor, 0.12) + ' !important;box-shadow:0 12px 40px ' + hexToRgba(brandColor, 0.55) + ' !important;}' +
+        'body.wl-branded .btn-landing-cta:active{box-shadow:0 2px 8px ' + hexToRgba(brandColor, 0.25) + ' !important;}' +
+        '.wl-partner-logo{display:flex;align-items:center;justify-content:flex-start;margin:0 0 12px;}' +
+        '.wl-partner-logo img{max-height:64px;max-width:280px;width:auto;height:auto;object-fit:contain;}' +
+        '.wl-benefits{margin:32px 0;padding:28px;border-radius:16px;background:rgba(20,46,89,0.04);border:1px solid rgba(20,46,89,0.08);}' +
+        '.wl-benefits p{margin:0;font-size:16px;line-height:1.6;color:#142e59;white-space:pre-line;}';
+    document.head.appendChild(style);
+}
+
+function replacePerfectForWithLogo(logoSrc, altText) {
+    const pfRow = document.querySelector('.pf-row');
+    if (!pfRow) return;
+    if (document.querySelector('.wl-partner-logo')) return;
+    pfRow.style.display = 'none';
+    pfRow.setAttribute('aria-hidden', 'true');
+    const wrapper = document.createElement('div');
+    wrapper.className = 'wl-partner-logo';
+    const img = document.createElement('img');
+    img.src = logoSrc;
+    img.alt = altText + ' logo';
+    img.loading = 'eager';
+    wrapper.appendChild(img);
+    pfRow.parentNode.insertBefore(wrapper, pfRow);
+}
+
+function replaceBuiltForWithDescription(description) {
+    const section = document.querySelector('.company-types-section');
+    if (!section) return;
+    if (document.querySelector('.wl-benefits')) return;
+    section.style.display = 'none';
+    section.setAttribute('aria-hidden', 'true');
+    const benefits = document.createElement('div');
+    benefits.className = 'wl-benefits';
+    const p = document.createElement('p');
+    p.textContent = description;
+    benefits.appendChild(p);
+    section.parentNode.insertBefore(benefits, section);
+}
+
+function hexToRgba(hex, alpha) {
+    const clean = hex.replace('#', '');
+    const r = parseInt(clean.slice(0, 2), 16);
+    const g = parseInt(clean.slice(2, 4), 16);
+    const b = parseInt(clean.slice(4, 6), 16);
+    return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
+}
+
+function darkenHex(hex, amount) {
+    const clean = hex.replace('#', '');
+    const r = Math.max(0, Math.floor(parseInt(clean.slice(0, 2), 16) * (1 - amount)));
+    const g = Math.max(0, Math.floor(parseInt(clean.slice(2, 4), 16) * (1 - amount)));
+    const b = Math.max(0, Math.floor(parseInt(clean.slice(4, 6), 16) * (1 - amount)));
+    return '#' + [r, g, b].map(function (n) {
+        const h = n.toString(16);
+        return h.length === 1 ? '0' + h : h;
+    }).join('');
+}
+
+function initWhitelabelBranding() {
+    const code = getViaCodeFromURL();
+    if (!code) return;
+    fetchWhitelabelPartners().then(function (data) {
+        if (!data || !data.partners) return;
+        const partner = data.partners[code];
+        if (!partner) return;
+        if (!partner.code) partner.code = code;
+        applyWhitelabelBranding(partner);
+    });
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initWhitelabelBranding);
+} else {
+    initWhitelabelBranding();
+}
+
+// ========================================
+// WHITELABEL BRANDING - END
+// ========================================
+
+// ========================================
 // LANGUAGE URL PARAMETER - START
 // ========================================
 

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+    <meta name="googlebot" content="noindex, nofollow">
+    <title>WL Admin</title>
+
+    <base href="/">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="wl-admin/admin.css">
+</head>
+<body>
+    <!-- Gate: only shows the gate; the rest of the UI is hidden until the access code is right -->
+    <div id="wlGate" class="wl-gate">
+        <form id="wlGateForm" class="wl-gate-card" autocomplete="off">
+            <input
+                type="password"
+                id="wlGateCode"
+                class="wl-gate-input"
+                placeholder=" "
+                autocomplete="off"
+                spellcheck="false"
+                aria-label="Access code"
+            >
+            <button type="submit" class="wl-gate-btn">Enter</button>
+        </form>
+    </div>
+
+    <!-- Real admin UI, hidden until the gate is passed -->
+    <main id="wlApp" class="wl-app" hidden>
+        <header class="wl-app-header">
+            <h1>Whitelabel Admin</h1>
+            <button type="button" id="wlLogoutBtn" class="wl-link">Lock</button>
+        </header>
+
+        <!-- One-time GitHub PAT setup; collapsible after it's set -->
+        <section class="wl-card" id="wlConfigCard">
+            <h2>Storage connection</h2>
+            <p class="wl-muted">
+                Branded pages are saved as commits to your GitHub repo, and AWS Amplify auto-deploys them.
+                You only need to set this once per device.
+            </p>
+
+            <div class="wl-form-row">
+                <label for="wlRepoOwner">GitHub owner</label>
+                <input type="text" id="wlRepoOwner" placeholder="stasher-city" spellcheck="false" autocomplete="off">
+            </div>
+            <div class="wl-form-row">
+                <label for="wlRepoName">Repository</label>
+                <input type="text" id="wlRepoName" placeholder="stasher-partner-signup" spellcheck="false" autocomplete="off">
+            </div>
+            <div class="wl-form-row">
+                <label for="wlRepoBranch">Branch</label>
+                <input type="text" id="wlRepoBranch" placeholder="main" spellcheck="false" autocomplete="off">
+            </div>
+            <div class="wl-form-row">
+                <label for="wlGithubToken">GitHub Personal Access Token <span class="wl-muted">(needs <code>contents:write</code>)</span></label>
+                <input type="password" id="wlGithubToken" placeholder="ghp_..." spellcheck="false" autocomplete="off">
+                <a class="wl-help-link" href="https://github.com/settings/tokens/new?description=Stasher%20Whitelabel%20Admin&scopes=repo" target="_blank" rel="noopener">How to create one →</a>
+            </div>
+            <div class="wl-form-actions">
+                <button type="button" id="wlSaveConfigBtn" class="wl-btn-primary">Save connection</button>
+                <span id="wlConfigStatus" class="wl-status"></span>
+            </div>
+        </section>
+
+        <!-- Create / update partner -->
+        <section class="wl-card" id="wlFormCard" hidden>
+            <h2>Create a branded page</h2>
+
+            <form id="wlPartnerForm" class="wl-form" novalidate>
+                <div class="wl-form-row">
+                    <label for="wlPartnerCode">Parent ID code</label>
+                    <input
+                        type="text"
+                        id="wlPartnerCode"
+                        placeholder="e.g. MARYSMITH"
+                        pattern="[A-Za-z0-9_-]+"
+                        required
+                        spellcheck="false"
+                        autocomplete="off"
+                    >
+                    <small class="wl-muted">Letters, numbers, dashes, underscores. Becomes <code>?via=CODE</code> in the branded URL.</small>
+                </div>
+
+                <div class="wl-form-row">
+                    <label for="wlPartnerLogo">Logo (PNG or JPEG)</label>
+                    <input
+                        type="file"
+                        id="wlPartnerLogo"
+                        accept="image/png,image/jpeg"
+                        required
+                    >
+                    <small class="wl-muted">Max 2 MB. Transparent PNG recommended.</small>
+                </div>
+
+                <div class="wl-form-row">
+                    <label for="wlPartnerColor">Brand colour</label>
+                    <div class="wl-color-row">
+                        <input
+                            type="color"
+                            id="wlPartnerColor"
+                            value="#142e59"
+                        >
+                        <input
+                            type="text"
+                            id="wlPartnerColorHex"
+                            value="#142e59"
+                            pattern="^#?[0-9a-fA-F]{6}$"
+                            required
+                            spellcheck="false"
+                            autocomplete="off"
+                        >
+                    </div>
+                    <small class="wl-muted">Used only for the header strip and the "Get started now" button.</small>
+                </div>
+
+                <div class="wl-form-row">
+                    <label for="wlPartnerDescription">Description</label>
+                    <textarea
+                        id="wlPartnerDescription"
+                        rows="4"
+                        maxlength="500"
+                        required
+                        placeholder="A short paragraph that replaces the 'Built for' section on the branded page."
+                    ></textarea>
+                </div>
+
+                <div class="wl-form-actions">
+                    <button type="submit" class="wl-btn-primary" id="wlSaveBtn">Save branded page</button>
+                    <span id="wlSaveStatus" class="wl-status"></span>
+                </div>
+            </form>
+
+            <div id="wlSavedUrl" class="wl-saved-url" hidden>
+                <p class="wl-muted">Shareable URL (live within a few minutes after the build):</p>
+                <div class="wl-saved-url-row">
+                    <input type="text" id="wlSavedUrlInput" readonly>
+                    <button type="button" id="wlSavedUrlCopy" class="wl-btn-secondary">Copy</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dashboard -->
+        <section class="wl-card" id="wlListCard" hidden>
+            <div class="wl-card-head">
+                <h2>Existing branded pages</h2>
+                <button type="button" id="wlRefreshBtn" class="wl-link">Refresh</button>
+            </div>
+            <div id="wlListContent" class="wl-list-content">
+                <p class="wl-muted">Loading…</p>
+            </div>
+        </section>
+    </main>
+
+    <script src="wl-admin/admin.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,3 @@
+User-agent: *
+Disallow: /wl-admin/
+Disallow: /wl-admin
