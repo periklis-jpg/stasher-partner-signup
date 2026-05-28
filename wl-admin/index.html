@@ -71,9 +71,14 @@
 
         <!-- Create / update partner -->
         <section class="wl-card" id="wlFormCard" hidden>
-            <h2>Create a branded page</h2>
+            <div class="wl-card-head">
+                <h2 id="wlFormTitle">Create a branded page</h2>
+                <button type="button" id="wlCancelEditBtn" class="wl-link" hidden>Cancel edit</button>
+            </div>
 
             <form id="wlPartnerForm" class="wl-form" novalidate>
+                <input type="hidden" id="wlEditingCode" value="">
+
                 <div class="wl-form-row">
                     <label for="wlPartnerCode">Parent ID code</label>
                     <input
@@ -85,7 +90,7 @@
                         spellcheck="false"
                         autocomplete="off"
                     >
-                    <small class="wl-muted">Letters, numbers, dashes, underscores. Becomes <code>?via=CODE</code> in the branded URL.</small>
+                    <small class="wl-muted">Letters, numbers, dashes, underscores. Becomes <code>?via=CODE</code> in the branded URL. Cannot be changed after creation.</small>
                 </div>
 
                 <div class="wl-form-row">
@@ -94,9 +99,8 @@
                         type="file"
                         id="wlPartnerLogo"
                         accept="image/png,image/jpeg"
-                        required
                     >
-                    <small class="wl-muted">Max 2 MB. Transparent PNG recommended.</small>
+                    <small class="wl-muted">Max 2 MB. Transparent PNG recommended. <span id="wlLogoEditHint" hidden>Leave empty to keep the current logo.</span></small>
                 </div>
 
                 <div class="wl-form-row">
@@ -121,14 +125,49 @@
                 </div>
 
                 <div class="wl-form-row">
-                    <label for="wlPartnerDescription">Description</label>
+                    <label for="wlPartnerTitle">Title <span class="wl-muted">(optional)</span></label>
+                    <input
+                        type="text"
+                        id="wlPartnerTitle"
+                        maxlength="140"
+                        placeholder="The benefits of using Stasher with Guesty"
+                        autocomplete="off"
+                    >
+                    <small class="wl-muted">Shown above the benefits list. If empty, the first line of the description is used.</small>
+                </div>
+
+                <div class="wl-form-row">
+                    <label for="wlPartnerDescription">Description / benefits</label>
                     <textarea
                         id="wlPartnerDescription"
-                        rows="4"
-                        maxlength="500"
+                        rows="5"
+                        maxlength="800"
                         required
-                        placeholder="A short paragraph that replaces the 'Built for' section on the branded page."
+                        placeholder="• 10% commission paid to you on every booking&#10;• 10% Custom Discount code for your guests&#10;• The top-rated luggage store platform"
                     ></textarea>
+                    <small class="wl-muted">Lines starting with •, -, * or + become checklist items. Plain lines become regular text.</small>
+                </div>
+
+                <div class="wl-form-row">
+                    <label for="wlPartnerCtaUrl">Integration guide link <span class="wl-muted">(optional)</span></label>
+                    <input
+                        type="url"
+                        id="wlPartnerCtaUrl"
+                        placeholder="https://docs.stasher.com/integration/guesty"
+                        autocomplete="off"
+                    >
+                    <small class="wl-muted">If set, shows a small "How to integrate" link at the bottom of the benefits card. Leave empty to omit it.</small>
+                </div>
+
+                <div class="wl-form-row">
+                    <label for="wlPartnerCtaLabel">Integration link label <span class="wl-muted">(optional)</span></label>
+                    <input
+                        type="text"
+                        id="wlPartnerCtaLabel"
+                        maxlength="140"
+                        placeholder="Click here to see how to integrate Stasher in a few minutes"
+                        autocomplete="off"
+                    >
                 </div>
 
                 <div class="wl-form-actions">

@@ -39,14 +39,21 @@
     var $configStatus = document.getElementById('wlConfigStatus');
 
     var $formCard = document.getElementById('wlFormCard');
+    var $formTitle = document.getElementById('wlFormTitle');
     var $form = document.getElementById('wlPartnerForm');
+    var $editingCode = document.getElementById('wlEditingCode');
     var $code = document.getElementById('wlPartnerCode');
     var $logo = document.getElementById('wlPartnerLogo');
+    var $logoEditHint = document.getElementById('wlLogoEditHint');
     var $colorPicker = document.getElementById('wlPartnerColor');
     var $colorHex = document.getElementById('wlPartnerColorHex');
+    var $titleField = document.getElementById('wlPartnerTitle');
     var $desc = document.getElementById('wlPartnerDescription');
+    var $ctaUrl = document.getElementById('wlPartnerCtaUrl');
+    var $ctaLabel = document.getElementById('wlPartnerCtaLabel');
     var $saveBtn = document.getElementById('wlSaveBtn');
     var $saveStatus = document.getElementById('wlSaveStatus');
+    var $cancelEditBtn = document.getElementById('wlCancelEditBtn');
     var $savedUrl = document.getElementById('wlSavedUrl');
     var $savedUrlInput = document.getElementById('wlSavedUrlInput');
     var $savedUrlCopy = document.getElementById('wlSavedUrlCopy');
@@ -54,6 +61,9 @@
     var $listCard = document.getElementById('wlListCard');
     var $listContent = document.getElementById('wlListContent');
     var $refreshBtn = document.getElementById('wlRefreshBtn');
+
+    // In-memory cache of currently rendered partners for edit/delete lookups
+    var partnersCache = {};
 
     // ===================================================================
     // GATE
@@ -233,16 +243,22 @@
             return Promise.reject(new Error('Set storage connection first.'));
         }
 
-        var code = sanitizeCode($code.value);
+        var editingCode = ($editingCode.value || '').trim();
+        var isEditing = !!editingCode;
+        var code = isEditing ? editingCode : sanitizeCode($code.value);
         if (!code) return Promise.reject(new Error('Parent ID code is invalid.'));
 
         var file = $logo.files && $logo.files[0];
-        if (!file) return Promise.reject(new Error('Please choose a logo file.'));
-        if (file.type !== 'image/png' && file.type !== 'image/jpeg') {
-            return Promise.reject(new Error('Logo must be a PNG or JPEG.'));
+        if (!isEditing && !file) {
+            return Promise.reject(new Error('Please choose a logo file.'));
         }
-        if (file.size > MAX_LOGO_BYTES) {
-            return Promise.reject(new Error('Logo is larger than 2 MB.'));
+        if (file) {
+            if (file.type !== 'image/png' && file.type !== 'image/jpeg') {
+                return Promise.reject(new Error('Logo must be a PNG or JPEG.'));
+            }
+            if (file.size > MAX_LOGO_BYTES) {
+                return Promise.reject(new Error('Logo is larger than 2 MB.'));
+            }
         }
 
         var color = ($colorHex.value || '').trim();
@@ -254,26 +270,53 @@
         var description = ($desc.value || '').trim();
         if (!description) return Promise.reject(new Error('Description is required.'));
 
-        var ext = fileExtension(file);
-        if (!ext) return Promise.reject(new Error('Unsupported file type.'));
+        var title = ($titleField.value || '').trim();
+        var ctaUrl = ($ctaUrl.value || '').trim();
+        var ctaLabel = ($ctaLabel.value || '').trim();
+
+        if (ctaUrl && !/^https?:\/\//i.test(ctaUrl)) {
+            return Promise.reject(new Error('Integration guide link must start with http:// or https://.'));
+        }
 
         $saveBtn.disabled = true;
-        setStatus($saveStatus, 'Uploading logo…', null);
         $savedUrl.hidden = true;
 
-        var logoPath = LOGOS_DIR + '/' + code + '.' + ext;
+        var existingPartner = partnersCache[code] || null;
+        var existingLogoPath = (existingPartner && existingPartner.logoPath) ? existingPartner.logoPath.replace(/^\//, '') : null;
 
-        return readFileAsBase64(file)
-            .then(function (b64) {
-                return upsertFile(cfg, logoPath, b64, 'whitelabel: upload logo for ' + code);
-            })
+        var logoUploadPromise;
+        var finalLogoPath;
+
+        if (file) {
+            var ext = fileExtension(file);
+            if (!ext) return Promise.reject(new Error('Unsupported file type.'));
+            finalLogoPath = LOGOS_DIR + '/' + code + '.' + ext;
+            setStatus($saveStatus, 'Uploading logo…', null);
+            logoUploadPromise = readFileAsBase64(file).then(function (b64) {
+                return upsertFile(cfg, finalLogoPath, b64, 'whitelabel: upload logo for ' + code);
+            }).then(function () {
+                // If we replaced an existing logo at a different extension, delete the old one
+                if (existingLogoPath && existingLogoPath !== finalLogoPath) {
+                    return deleteFile(cfg, existingLogoPath, 'whitelabel: remove old logo for ' + code)
+                        .catch(function () { /* best effort */ });
+                }
+            });
+        } else {
+            finalLogoPath = existingLogoPath;
+            logoUploadPromise = Promise.resolve();
+        }
+
+        return logoUploadPromise
             .then(function () {
                 setStatus($saveStatus, 'Saving partner…', null);
                 return upsertPartnersJson(cfg, code, {
                     code: code,
                     brandColor: color.toLowerCase(),
+                    title: title,
                     description: description,
-                    logoPath: '/' + logoPath,
+                    ctaUrl: ctaUrl,
+                    ctaLabel: ctaLabel,
+                    logoPath: '/' + finalLogoPath,
                     updatedAt: new Date().toISOString()
                 });
             })
@@ -281,8 +324,9 @@
                 var url = SHARE_BASE_URL + '?via=' + encodeURIComponent(code);
                 $savedUrlInput.value = url;
                 $savedUrl.hidden = false;
-                setStatus($saveStatus, 'Saved. Live within a few minutes.', 'success');
+                setStatus($saveStatus, isEditing ? 'Updated. Live within a few minutes.' : 'Saved. Live within a few minutes.', 'success');
                 $saveBtn.disabled = false;
+                exitEditMode();
                 $form.reset();
                 $colorPicker.value = '#142e59';
                 $colorHex.value = '#142E59';
@@ -299,6 +343,125 @@
             setStatus($saveStatus, 'Could not copy. Select and copy manually.', 'error');
         }
     });
+
+    // ===================================================================
+    // EDIT / DELETE FLOW
+    // ===================================================================
+
+    function enterEditMode(code) {
+        var partner = partnersCache[code];
+        if (!partner) {
+            setStatus($saveStatus, 'Could not find partner: ' + code, 'error');
+            return;
+        }
+        $editingCode.value = code;
+        $code.value = code;
+        $code.readOnly = true;
+        $code.classList.add('wl-readonly');
+        $titleField.value = partner.title || '';
+        $desc.value = partner.description || '';
+        $colorPicker.value = (partner.brandColor || '#142e59').toLowerCase();
+        $colorHex.value = (partner.brandColor || '#142e59').toUpperCase();
+        $ctaUrl.value = partner.ctaUrl || '';
+        $ctaLabel.value = partner.ctaLabel || '';
+        $logo.value = '';
+        $logo.required = false;
+        $logoEditHint.hidden = false;
+        $formTitle.textContent = 'Edit branded page: ' + code;
+        $saveBtn.textContent = 'Update branded page';
+        $cancelEditBtn.hidden = false;
+        $savedUrl.hidden = true;
+        setStatus($saveStatus, '', null);
+        $formCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function exitEditMode() {
+        $editingCode.value = '';
+        $code.readOnly = false;
+        $code.classList.remove('wl-readonly');
+        $logo.required = true;
+        $logoEditHint.hidden = true;
+        $formTitle.textContent = 'Create a branded page';
+        $saveBtn.textContent = 'Save branded page';
+        $cancelEditBtn.hidden = true;
+    }
+
+    $cancelEditBtn.addEventListener('click', function () {
+        exitEditMode();
+        $form.reset();
+        $colorPicker.value = '#142e59';
+        $colorHex.value = '#142E59';
+        setStatus($saveStatus, '', null);
+    });
+
+    function deletePartner(code) {
+        var cfg = readConfig();
+        if (!cfg || !cfg.token) {
+            setStatus($saveStatus, 'Set storage connection first.', 'error');
+            return;
+        }
+        var partner = partnersCache[code];
+        if (!partner) return;
+        if (!window.confirm('Delete branded page "' + code + '"? This cannot be undone.')) {
+            return;
+        }
+
+        setStatus($saveStatus, 'Deleting ' + code + '…', null);
+
+        var logoPath = (partner.logoPath || '').replace(/^\//, '');
+        var deleteLogoPromise = logoPath
+            ? deleteFile(cfg, logoPath, 'whitelabel: delete logo for ' + code).catch(function () { /* best effort */ })
+            : Promise.resolve();
+
+        deleteLogoPromise
+            .then(function () { return removePartnerFromJson(cfg, code); })
+            .then(function () {
+                setStatus($saveStatus, 'Deleted ' + code + '.', 'success');
+                if ($editingCode.value === code) {
+                    exitEditMode();
+                    $form.reset();
+                }
+                refreshDashboard();
+            })
+            .catch(function (err) {
+                setStatus($saveStatus, 'Delete failed: ' + err.message, 'error');
+            });
+    }
+
+    function removePartnerFromJson(cfg, code) {
+        return getFile(cfg, PARTNERS_JSON_PATH).then(function (existing) {
+            var current = { version: 1, partners: {} };
+            if (existing && existing.content) {
+                try {
+                    current = JSON.parse(atob(existing.content.replace(/\n/g, '')));
+                    if (!current.partners) current.partners = {};
+                    if (!current.version) current.version = 1;
+                } catch (e) {}
+            }
+            if (!(code in current.partners)) return;
+            delete current.partners[code];
+
+            var newJson = JSON.stringify(current, null, 2) + '\n';
+            var body = {
+                message: 'whitelabel: remove partner ' + code,
+                content: b64EncodeUtf8(newJson),
+                branch: cfg.branch
+            };
+            if (existing && existing.sha) body.sha = existing.sha;
+            return githubApi('PUT', repoContentsPath(cfg, PARTNERS_JSON_PATH), body, cfg.token);
+        });
+    }
+
+    function deleteFile(cfg, path, message) {
+        return getFile(cfg, path).then(function (existing) {
+            if (!existing || !existing.sha) return null;
+            return githubApi('DELETE', repoContentsPath(cfg, path), {
+                message: message,
+                sha: existing.sha,
+                branch: cfg.branch
+            }, cfg.token);
+        });
+    }
 
     // ===================================================================
     // PERSISTENCE: GITHUB CONTENTS API
@@ -417,7 +580,10 @@
         }
 
         fetchPromise
-            .then(function (data) { renderList(data && data.partners ? data.partners : {}); })
+            .then(function (data) {
+                partnersCache = (data && data.partners) ? data.partners : {};
+                renderList(partnersCache);
+            })
             .catch(function (err) {
                 $listContent.innerHTML = '<p class="wl-list-empty">Could not load list: ' + escapeHtml(err.message) + '</p>';
             });
@@ -450,12 +616,25 @@
                         '</div>' +
                     '</div>' +
                     '<div class="wl-list-actions">' +
+                        '<a class="wl-link" href="' + escapeAttr(url) + '" target="_blank" rel="noopener">Preview</a>' +
+                        '<button type="button" class="wl-link" data-edit="' + escapeAttr(code) + '">Edit</button>' +
+                        '<button type="button" class="wl-link wl-link-danger" data-delete="' + escapeAttr(code) + '">Delete</button>' +
                         '<button type="button" class="wl-link" data-copy="' + escapeAttr(url) + '">Copy link</button>' +
                     '</div>' +
                 '</div>';
         }).join('');
         $listContent.innerHTML = html;
 
+        Array.prototype.forEach.call($listContent.querySelectorAll('[data-edit]'), function (btn) {
+            btn.addEventListener('click', function () {
+                enterEditMode(btn.getAttribute('data-edit'));
+            });
+        });
+        Array.prototype.forEach.call($listContent.querySelectorAll('[data-delete]'), function (btn) {
+            btn.addEventListener('click', function () {
+                deletePartner(btn.getAttribute('data-delete'));
+            });
+        });
         Array.prototype.forEach.call($listContent.querySelectorAll('[data-copy]'), function (btn) {
             btn.addEventListener('click', function () {
                 var temp = document.createElement('input');

@@ -119,6 +119,15 @@ html, body {
 }
 .wl-link:hover { color: var(--wl-accent-hover); }
 
+.wl-link-danger { color: var(--wl-danger); }
+.wl-link-danger:hover { color: #8b1d17; }
+
+.wl-readonly {
+    background-color: #f5f8fc !important;
+    color: var(--wl-muted) !important;
+    cursor: not-allowed;
+}
+
 .wl-card {
     background: var(--wl-card);
     border: 1px solid var(--wl-border);

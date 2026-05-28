@@ -194,7 +194,7 @@ function applyWhitelabelBranding(partner) {
             replacePerfectForWithLogo(partner.logoPath, partner.code || 'Partner');
         }
         if (partner.description) {
-            replaceBuiltForWithDescription(partner.description);
+            replaceBuiltForWithDescription(partner);
         }
     } catch (error) {
         console.warn('[Whitelabel] Could not apply branding:', error);
@@ -212,8 +212,8 @@ function injectWhitelabelBrandStyles(brandColor) {
         'body.wl-branded .btn-landing-cta:hover{background:' + darkenHex(brandColor, 0.12) + ' !important;background-color:' + darkenHex(brandColor, 0.12) + ' !important;color:' + ctaText + ' !important;box-shadow:0 12px 40px ' + hexToRgba(brandColor, 0.55) + ' !important;}' +
         'body.wl-branded .btn-landing-cta:active{box-shadow:0 2px 8px ' + hexToRgba(brandColor, 0.25) + ' !important;}' +
         '.wl-partner-logo{display:flex;align-items:center;justify-content:flex-start;margin:0 0 12px;}' +
-        '.wl-partner-logo img{max-height:54px;max-width:240px;width:auto;height:auto;object-fit:contain;}' +
-        '@media (max-width:600px){.wl-partner-logo{justify-content:center;}.wl-partner-logo img{max-height:44px;max-width:200px;}}' +
+        '.wl-partner-logo img{max-height:46px;max-width:210px;width:auto;height:auto;object-fit:contain;}' +
+        '@media (max-width:600px){.wl-partner-logo{justify-content:center;}.wl-partner-logo img{max-height:38px;max-width:170px;}}' +
         '.wl-benefits{margin:32px 0;padding:28px;border-radius:18px;background:#fff;border:1px solid rgba(20,46,89,0.08);box-shadow:0 6px 28px rgba(20,46,89,0.06);}' +
         '.wl-benefits-title{margin:0 0 18px;font-size:20px;font-weight:700;color:#142e59;line-height:1.35;}' +
         '.wl-benefits-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px;}' +
@@ -222,7 +222,14 @@ function injectWhitelabelBrandStyles(brandColor) {
         '.wl-benefits-icon svg{width:100%;height:100%;display:block;}' +
         '.wl-benefits-text{flex:1;font-size:16px;line-height:1.55;color:#142e59;}' +
         '.wl-benefits-paragraph{margin:8px 0 0;font-size:16px;line-height:1.6;color:#142e59;white-space:pre-line;}' +
-        '@media (max-width:600px){.wl-benefits{padding:22px;border-radius:14px;}.wl-benefits-title{font-size:18px;}.wl-benefits-text,.wl-benefits-paragraph{font-size:15px;}}';
+        '.wl-benefits-cta{display:inline-flex;align-items:center;gap:8px;margin-top:18px;padding-top:16px;border-top:1px solid rgba(20,46,89,0.08);color:#142e59;font-size:14px;font-weight:600;text-decoration:none;line-height:1.4;}' +
+        '.wl-benefits-cta:hover{color:#0f2347;}' +
+        '.wl-benefits-cta:hover .wl-benefits-cta-arrow{transform:translateX(3px);}' +
+        '.wl-benefits-cta-icon{flex:0 0 18px;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;color:#142e59;}' +
+        '.wl-benefits-cta-icon svg{width:100%;height:100%;display:block;}' +
+        '.wl-benefits-cta-arrow{display:inline-flex;width:14px;height:14px;color:#142e59;transition:transform 0.18s ease;}' +
+        '.wl-benefits-cta-arrow svg{width:100%;height:100%;display:block;}' +
+        '@media (max-width:600px){.wl-benefits{padding:22px;border-radius:14px;}.wl-benefits-title{font-size:18px;}.wl-benefits-text,.wl-benefits-paragraph{font-size:15px;}.wl-benefits-cta{font-size:13px;}}';
     document.head.appendChild(style);
 }
 
@@ -261,21 +268,25 @@ function replacePerfectForWithLogo(logoSrc, altText) {
     pfRow.parentNode.insertBefore(wrapper, pfRow);
 }
 
-function replaceBuiltForWithDescription(description) {
+function replaceBuiltForWithDescription(partner) {
     const section = document.querySelector('.company-types-section');
     if (!section) return;
     if (document.querySelector('.wl-benefits')) return;
     section.style.display = 'none';
     section.setAttribute('aria-hidden', 'true');
 
-    const parsed = parseBenefits(description);
+    const description = (partner && partner.description) || '';
+    const explicitTitle = (partner && partner.title) ? String(partner.title).trim() : '';
+    const parsed = parseBenefits(description, !!explicitTitle);
+
     const benefits = document.createElement('div');
     benefits.className = 'wl-benefits';
 
-    if (parsed.title) {
+    const finalTitle = explicitTitle || parsed.title;
+    if (finalTitle) {
         const h3 = document.createElement('h3');
         h3.className = 'wl-benefits-title';
-        h3.textContent = parsed.title;
+        h3.textContent = finalTitle;
         benefits.appendChild(h3);
     }
 
@@ -295,7 +306,45 @@ function replaceBuiltForWithDescription(description) {
         benefits.appendChild(p);
     }
 
+    if (partner && partner.ctaUrl && /^https?:\/\//i.test(partner.ctaUrl)) {
+        benefits.appendChild(buildBenefitsCta(partner.ctaUrl, partner.ctaLabel));
+    }
+
     section.parentNode.insertBefore(benefits, section);
+}
+
+function buildBenefitsCta(url, label) {
+    const a = document.createElement('a');
+    a.className = 'wl-benefits-cta';
+    a.href = url;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+
+    const iconWrap = document.createElement('span');
+    iconWrap.className = 'wl-benefits-cta-icon';
+    iconWrap.setAttribute('aria-hidden', 'true');
+    iconWrap.innerHTML =
+        '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+            '<path d="M4 6.5C4 5.12 5.12 4 6.5 4H18a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.78.41L17 18.5H6.5A2.5 2.5 0 0 1 4 16V6.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>' +
+            '<path d="M8 9h8M8 12h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>' +
+        '</svg>';
+
+    const textSpan = document.createElement('span');
+    const safeLabel = (label && String(label).trim()) || 'Click here to see how to integrate Stasher in a few minutes';
+    textSpan.textContent = safeLabel;
+
+    const arrowWrap = document.createElement('span');
+    arrowWrap.className = 'wl-benefits-cta-arrow';
+    arrowWrap.setAttribute('aria-hidden', 'true');
+    arrowWrap.innerHTML =
+        '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+            '<path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+        '</svg>';
+
+    a.appendChild(iconWrap);
+    a.appendChild(textSpan);
+    a.appendChild(arrowWrap);
+    return a;
 }
 
 /**
@@ -306,8 +355,12 @@ function replaceBuiltForWithDescription(description) {
  *     non-bullet lines after a bullet are appended to the previous item.
  *   - If no bullets exist, the first line is the title and the rest is a
  *     plain paragraph (preserving line breaks).
+ *
+ * When `titleAlreadyProvided` is true, no title is extracted from the
+ * description — every non-bullet line is treated as either a paragraph
+ * (no bullets present) or appended to the most recent item (bullets present).
  */
-function parseBenefits(description) {
+function parseBenefits(description, titleAlreadyProvided) {
     const result = { title: '', items: [], paragraph: '' };
     if (!description) return result;
 
@@ -323,7 +376,9 @@ function parseBenefits(description) {
     const hasBullets = lines.some(isBullet);
 
     if (!hasBullets) {
-        if (lines.length === 1) {
+        if (titleAlreadyProvided) {
+            result.paragraph = lines.join('\n');
+        } else if (lines.length === 1) {
             result.title = lines[0];
         } else {
             result.title = lines[0];
@@ -332,7 +387,7 @@ function parseBenefits(description) {
         return result;
     }
 
-    let collectingTitle = true;
+    let collectingTitle = !titleAlreadyProvided;
     const titleLines = [];
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
@@ -346,7 +401,9 @@ function parseBenefits(description) {
             result.items[result.items.length - 1] += ' ' + line;
         }
     }
-    result.title = titleLines.join(' ');
+    if (!titleAlreadyProvided) {
+        result.title = titleLines.join(' ');
+    }
     return result;
 }
 
