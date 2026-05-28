@@ -4,12 +4,14 @@
     "2960514": {
       "code": "2960514",
       "brandColor": "#077b67",
-      "title": "Luggage Storage For Your Guests",
-      "description": "The benefits of using Stasher with Guesty\nâ¢ 10% commission paid to you on every booking you generate via a unique link\nâ¢ 10% Custom Discount code for your guests\nâ¢ The top-rated luggage store platform",
+      "heroHeadline": "Luggage Storage For Your Guests",
+      "heroSubtitle": "",
+      "title": "The benefits of using Stasher with Guesty",
+      "description": "• 10% commission paid to you on every booking you generate via a unique link\n• 10% Custom Discount code for your guests\n• The top-rated luggage store platform",
       "ctaUrl": "https://www.guesty.com/marketplace-items/stasher/",
       "ctaLabel": "",
       "logoPath": "/whitelabel/logos/2960514.png",
-      "updatedAt": "2026-05-28T16:23:18.451Z"
+      "updatedAt": "2026-05-28T16:43:10.188Z"
     }
   }
 }
