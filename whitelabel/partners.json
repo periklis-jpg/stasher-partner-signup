@@ -1,4 +1,12 @@
 {
   "version": 1,
-  "partners": {}
+  "partners": {
+    "2960514": {
+      "code": "2960514",
+      "brandColor": "#077b67",
+      "description": "The benefits of using Stasher with Guesty\n• 10% commission paid to you on every booking you generate via a unique link\n• 10% Custom Discount code for your guests\n• The top-rated luggage store platform",
+      "logoPath": "/whitelabel/logos/2960514.png",
+      "updatedAt": "2026-05-28T14:31:10.425Z"
+    }
+  }
 }
