@@ -45,6 +45,11 @@
     var $code = document.getElementById('wlPartnerCode');
     var $logo = document.getElementById('wlPartnerLogo');
     var $logoEditHint = document.getElementById('wlLogoEditHint');
+    var $logoPreview = document.getElementById('wlLogoPreview');
+    var $logoPreviewImg = document.getElementById('wlLogoPreviewImg');
+    var $logoPreviewLabel = document.getElementById('wlLogoPreviewLabel');
+    var $logoPreviewHint = document.getElementById('wlLogoPreviewHint');
+    var savedLogoPreviewSrc = '';
     var $colorPicker = document.getElementById('wlPartnerColor');
     var $colorHex = document.getElementById('wlPartnerColorHex');
     var $titleField = document.getElementById('wlPartnerTitle');
@@ -367,6 +372,7 @@
         $logo.value = '';
         $logo.required = false;
         $logoEditHint.hidden = false;
+        showSavedLogoPreview(partner.logoPath);
         $formTitle.textContent = 'Edit branded page: ' + code;
         $saveBtn.textContent = 'Update branded page';
         $cancelEditBtn.hidden = false;
@@ -384,7 +390,53 @@
         $formTitle.textContent = 'Create a branded page';
         $saveBtn.textContent = 'Save branded page';
         $cancelEditBtn.hidden = true;
+        hideLogoPreview();
     }
+
+    function showSavedLogoPreview(logoPath) {
+        if (!logoPath) {
+            hideLogoPreview();
+            return;
+        }
+        // Add a cache-buster so the freshly-updated logo is shown after a save.
+        savedLogoPreviewSrc = logoPath + (logoPath.indexOf('?') >= 0 ? '&' : '?') + 't=' + Date.now();
+        $logoPreviewImg.src = savedLogoPreviewSrc;
+        $logoPreviewLabel.textContent = 'Current logo';
+        $logoPreviewHint.textContent = 'Pick a new file to replace it, or leave empty to keep this one.';
+        $logoPreview.hidden = false;
+    }
+
+    function showNewLogoPreview(file) {
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function () {
+            $logoPreviewImg.src = String(reader.result || '');
+            $logoPreviewLabel.textContent = 'New logo (preview)';
+            $logoPreviewHint.textContent = 'This will replace the current logo when you save.';
+            $logoPreview.hidden = false;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function hideLogoPreview() {
+        $logoPreview.hidden = true;
+        $logoPreviewImg.removeAttribute('src');
+        savedLogoPreviewSrc = '';
+    }
+
+    $logo.addEventListener('change', function () {
+        var file = $logo.files && $logo.files[0];
+        if (file) {
+            showNewLogoPreview(file);
+        } else if (savedLogoPreviewSrc) {
+            $logoPreviewImg.src = savedLogoPreviewSrc;
+            $logoPreviewLabel.textContent = 'Current logo';
+            $logoPreviewHint.textContent = 'Pick a new file to replace it, or leave empty to keep this one.';
+            $logoPreview.hidden = false;
+        } else {
+            hideLogoPreview();
+        }
+    });
 
     $cancelEditBtn.addEventListener('click', function () {
         exitEditMode();

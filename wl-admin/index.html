@@ -95,6 +95,15 @@
 
                 <div class="wl-form-row">
                     <label for="wlPartnerLogo">Logo (PNG or JPEG)</label>
+                    <div class="wl-logo-preview" id="wlLogoPreview" hidden>
+                        <div class="wl-logo-preview-thumb">
+                            <img id="wlLogoPreviewImg" src="" alt="Current logo">
+                        </div>
+                        <div class="wl-logo-preview-body">
+                            <p class="wl-logo-preview-label" id="wlLogoPreviewLabel">Current logo</p>
+                            <p class="wl-muted" id="wlLogoPreviewHint">Pick a new file to replace it, or leave empty to keep this one.</p>
+                        </div>
+                    </div>
                     <input
                         type="file"
                         id="wlPartnerLogo"
