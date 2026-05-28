@@ -212,8 +212,15 @@ function injectWhitelabelBrandStyles(brandColor) {
         'body.wl-branded .btn-landing-cta:active{box-shadow:0 2px 8px ' + hexToRgba(brandColor, 0.25) + ' !important;}' +
         '.wl-partner-logo{display:flex;align-items:center;justify-content:flex-start;margin:0 0 12px;}' +
         '.wl-partner-logo img{max-height:64px;max-width:280px;width:auto;height:auto;object-fit:contain;}' +
-        '.wl-benefits{margin:32px 0;padding:28px;border-radius:16px;background:rgba(20,46,89,0.04);border:1px solid rgba(20,46,89,0.08);}' +
-        '.wl-benefits p{margin:0;font-size:16px;line-height:1.6;color:#142e59;white-space:pre-line;}';
+        '.wl-benefits{margin:32px 0;padding:28px;border-radius:18px;background:#fff;border:1px solid rgba(20,46,89,0.08);box-shadow:0 6px 28px rgba(20,46,89,0.06);}' +
+        '.wl-benefits-title{margin:0 0 18px;font-size:20px;font-weight:700;color:#142e59;line-height:1.35;}' +
+        '.wl-benefits-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px;}' +
+        '.wl-benefits-item{display:flex;align-items:flex-start;gap:12px;}' +
+        '.wl-benefits-icon{flex:0 0 22px;width:22px;height:22px;color:#142e59;margin-top:2px;display:inline-flex;align-items:center;justify-content:center;}' +
+        '.wl-benefits-icon svg{width:100%;height:100%;display:block;}' +
+        '.wl-benefits-text{flex:1;font-size:16px;line-height:1.55;color:#142e59;}' +
+        '.wl-benefits-paragraph{margin:8px 0 0;font-size:16px;line-height:1.6;color:#142e59;white-space:pre-line;}' +
+        '@media (max-width:600px){.wl-benefits{padding:22px;border-radius:14px;}.wl-benefits-title{font-size:18px;}.wl-benefits-text,.wl-benefits-paragraph{font-size:15px;}}';
     document.head.appendChild(style);
 }
 
@@ -239,12 +246,109 @@ function replaceBuiltForWithDescription(description) {
     if (document.querySelector('.wl-benefits')) return;
     section.style.display = 'none';
     section.setAttribute('aria-hidden', 'true');
+
+    const parsed = parseBenefits(description);
     const benefits = document.createElement('div');
     benefits.className = 'wl-benefits';
-    const p = document.createElement('p');
-    p.textContent = description;
-    benefits.appendChild(p);
+
+    if (parsed.title) {
+        const h3 = document.createElement('h3');
+        h3.className = 'wl-benefits-title';
+        h3.textContent = parsed.title;
+        benefits.appendChild(h3);
+    }
+
+    if (parsed.items.length > 0) {
+        const ul = document.createElement('ul');
+        ul.className = 'wl-benefits-list';
+        parsed.items.forEach(function (text) {
+            ul.appendChild(buildBenefitItem(text));
+        });
+        benefits.appendChild(ul);
+    }
+
+    if (parsed.paragraph) {
+        const p = document.createElement('p');
+        p.className = 'wl-benefits-paragraph';
+        p.textContent = parsed.paragraph;
+        benefits.appendChild(p);
+    }
+
     section.parentNode.insertBefore(benefits, section);
+}
+
+/**
+ * Parse the admin-supplied description into a title + checklist items.
+ * Rules:
+ *   - Lines starting with •, -, * or + are treated as bullet items.
+ *   - If any bullets exist, lines before the first bullet form the title;
+ *     non-bullet lines after a bullet are appended to the previous item.
+ *   - If no bullets exist, the first line is the title and the rest is a
+ *     plain paragraph (preserving line breaks).
+ */
+function parseBenefits(description) {
+    const result = { title: '', items: [], paragraph: '' };
+    if (!description) return result;
+
+    const lines = String(description).split(/\r?\n/).map(function (l) {
+        return l.trim();
+    }).filter(Boolean);
+    if (lines.length === 0) return result;
+
+    const bulletRegex = /^[•\-*+]\s+/;
+    const isBullet = function (line) { return bulletRegex.test(line); };
+    const stripBullet = function (line) { return line.replace(bulletRegex, '').trim(); };
+
+    const hasBullets = lines.some(isBullet);
+
+    if (!hasBullets) {
+        if (lines.length === 1) {
+            result.title = lines[0];
+        } else {
+            result.title = lines[0];
+            result.paragraph = lines.slice(1).join('\n');
+        }
+        return result;
+    }
+
+    let collectingTitle = true;
+    const titleLines = [];
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (isBullet(line)) {
+            collectingTitle = false;
+            const cleaned = stripBullet(line);
+            if (cleaned) result.items.push(cleaned);
+        } else if (collectingTitle) {
+            titleLines.push(line);
+        } else if (result.items.length > 0) {
+            result.items[result.items.length - 1] += ' ' + line;
+        }
+    }
+    result.title = titleLines.join(' ');
+    return result;
+}
+
+function buildBenefitItem(text) {
+    const li = document.createElement('li');
+    li.className = 'wl-benefits-item';
+
+    const icon = document.createElement('span');
+    icon.className = 'wl-benefits-icon';
+    icon.setAttribute('aria-hidden', 'true');
+    icon.innerHTML =
+        '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+            '<path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+            '<path d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+        '</svg>';
+
+    const t = document.createElement('span');
+    t.className = 'wl-benefits-text';
+    t.textContent = text;
+
+    li.appendChild(icon);
+    li.appendChild(t);
+    return li;
 }
 
 function hexToRgba(hex, alpha) {
