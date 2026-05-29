@@ -2072,11 +2072,14 @@ function setupEventListeners() {
     // Continue Button 3
     document.getElementById('continueBtn3').addEventListener('click', function() {
         if (validatePage3()) {
-            // Stage A: fire in background — don't block the user moving to page 4
-            stageAPromise = createAffiliateAfterPage3().catch(error => {
-                console.error('Error creating affiliate after Page 3:', error);
-                // Final submission will fall back to legacy behavior
-            });
+            // IMPORTANT: we deliberately do NOT create the affiliate here.
+            // Tapfiliate has no "update affiliate" endpoint — an affiliate's
+            // company, address/city and custom fields (e.g. commission type)
+            // can ONLY be set at creation time. Creating early (before page 4)
+            // meant those fields were stuck on placeholder values ('N/A') and
+            // never filled in, and affiliates could end up unenrolled/archived.
+            // We now create the affiliate ONCE, with complete data, at the
+            // final step (createTapfiliateAffiliate single-shot create+enrol).
             nextPage();
         }
     });
