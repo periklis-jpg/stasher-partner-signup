@@ -2106,9 +2106,27 @@ function setupEventListeners() {
     // Page 5: Final Step
     const bookDemoBtn = document.getElementById('bookDemoBtn');
     if (bookDemoBtn) {
-        bookDemoBtn.addEventListener('click', function() {
+        bookDemoBtn.addEventListener('click', async function() {
             formState.wantsDemoCall = true;  // Track that user wants demo call
-            window.location.href = 'https://cal.com/periklis/15min';
+
+            // CRITICAL: finalize the affiliate BEFORE leaving for cal.com.
+            // Stage A only created the affiliate with placeholder company/city
+            // and did NOT enrol them in a program. Without this finalize step,
+            // every demo-call signup lost their company/city and never got
+            // routed into the selected program (appearing archived, not pending).
+            bookDemoBtn.disabled = true;
+            showApiLoading();
+            try {
+                await finalizeAffiliateWithRetry();
+                console.log('✅ Affiliate finalized before demo booking');
+            } catch (error) {
+                console.error('Error finalizing affiliate before demo booking:', error);
+                // Still send the user to the demo booking — don't trap them.
+            } finally {
+                hideApiLoading();
+                clearSignupFlowState();
+                window.location.href = 'https://cal.com/periklis/15min';
+            }
         });
     }
 
@@ -2711,13 +2729,32 @@ function generateSummary() {
     summaryContent.innerHTML = html;
 }
 
+// Finalize the affiliate (Stage B: enroll in program + save company/city),
+// retrying once on a transient failure so a network blip can't strand an
+// affiliate in the Stage-A placeholder state (no program, N/A company/city).
+async function finalizeAffiliateWithRetry(maxAttempts = 2) {
+    let lastError = null;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+            return await createTapfiliateAffiliate();
+        } catch (error) {
+            lastError = error;
+            console.warn('Finalize attempt ' + attempt + ' of ' + maxAttempts + ' failed:', error && error.message);
+            if (attempt < maxAttempts) {
+                await new Promise(resolve => setTimeout(resolve, 800));
+            }
+        }
+    }
+    throw lastError || new Error('Finalize failed');
+}
+
 // Handle Skip Demo
 async function handleSkipDemo() {
     // Show confirmation page immediately — don't wait for the API call
     showConfirmationPage();
 
-    // Fire enrollment in background
-    createTapfiliateAffiliate().then(result => {
+    // Fire enrollment in background (with retry)
+    finalizeAffiliateWithRetry().then(result => {
         if (result && result.success) {
             console.log('Form submitted successfully to Tapfiliate');
         } else {
