@@ -2753,19 +2753,21 @@ async function finalizeAffiliateWithRetry(maxAttempts = 2) {
 
 // Handle Skip Demo
 async function handleSkipDemo() {
-    // Show confirmation page immediately — don't wait for the API call
-    showConfirmationPage();
-
-    // Fire enrollment in background (with retry)
-    finalizeAffiliateWithRetry().then(result => {
+    showApiLoading();
+    try {
+        const result = await finalizeAffiliateWithRetry();
         if (result && result.success) {
             console.log('Form submitted successfully to Tapfiliate');
+            showConfirmationPage();
         } else {
-            console.warn('Form submission to Tapfiliate had issues:', result);
+            throw new Error('Signup did not complete successfully.');
         }
-    }).catch(error => {
+    } catch (error) {
         console.error('Error submitting form to Tapfiliate:', error);
-    });
+        alert(error.message || 'Something went wrong while creating your affiliate account. Please try again.');
+    } finally {
+        hideApiLoading();
+    }
 }
 
 // Show Confirmation Page
@@ -2979,181 +2981,129 @@ async function updateCommissionTypeAfterPage4() {
     }
 }
 
-// Create affiliate via secure backend endpoint (Stage B or legacy)
-async function createTapfiliateAffiliate() {
-    const companyTypeLabels = {
-        'supply': 'I want to store bags (Supply)',
-        'vacation-rental': 'Vacation Rental / Airbnb Host',
-        'pms': 'PMS',
-        'venue': 'Venue',
-        'blog': 'Blog',
-        'tour-operator': 'Tour Operator',
-        'transportations': 'Transportations',
-        'other': 'Other'
-    };
+// POST helper for the affiliate backend
+async function postToAffiliateBackend(payload) {
+    const response = await fetch(BACKEND_API_URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+    });
 
-    const programId = PROGRAM_ID_MAP[formState.program];
+    const contentType = response.headers.get('content-type');
+    const responseText = await response.text();
+
+    console.log('Backend response status:', response.status);
+    console.log('Backend response content-type:', contentType);
+
+    if (!response.ok) {
+        if (contentType && contentType.includes('text/html')) {
+            console.error('Backend returned HTML error page instead of JSON');
+            throw new Error('Something went wrong while creating your affiliate account. Please try again later.');
+        }
+
+        let errorMessage = 'Something went wrong while creating your affiliate account. Please try again later.';
+        try {
+            const errorData = JSON.parse(responseText);
+            errorMessage = errorData.error || errorData.message || errorMessage;
+        } catch (e) {
+            console.error('Could not parse error response:', responseText);
+        }
+
+        throw new Error(errorMessage);
+    }
+
+    try {
+        return JSON.parse(responseText);
+    } catch (e) {
+        console.error('Could not parse success response:', responseText);
+        throw new Error('Invalid response from server');
+    }
+}
+
+// Create affiliate via secure backend endpoint (two-step: create, then enroll)
+async function createTapfiliateAffiliate() {
+    const programCurrency = formState.program;
+    const programId = PROGRAM_ID_MAP[programCurrency];
     if (!programId) {
         throw new Error('Program selection is missing or invalid.');
     }
 
-    // If Stage A is still in-flight, wait for it before deciding the payload
-    if (stageAPromise && !createdAffiliateId) {
-        console.log('Waiting for Stage A to complete before finalizing...');
-        await stageAPromise;
-    }
+    const parentId = resolveParentId();
+    console.log('[Tracking] parent_id resolved to:', parentId || '(none)');
 
-    // Decide which payload to send based on whether Stage A has already created an affiliate
-    let payloadToSend;
+    let affiliateId = createdAffiliateId;
 
-    if (createdAffiliateId) {
-        // Stage B: Finalize existing affiliate and enroll into selected program
-        payloadToSend = {
-            mode: 'finalize_affiliate',
-            affiliate_id: createdAffiliateId,
-            program: programId,
-            address: {
-                address: 'n/a',
-                postal_code: 'n/a',
-                city: formState.city || 'n/a',
-                country: {
-                    code: COUNTRY_ISO_MAP[formState.country] || 'GB'
-                }
-            },
-            company: {
-                name: formState.companyName || 'n/a',
-                description: formState.companyDescription || ''
-            }
-        };
-
-        // Resolve parent_id with full fallback chain (URL > localStorage > field)
-        const stageBParentId = resolveParentId();
-        console.log('[Tracking] Stage B parent_id resolved to:', stageBParentId || '(none)');
-        if (stageBParentId) {
-            payloadToSend.parent_id = stageBParentId;
-        }
-
-        // Add commission_type if available (for custom fields)
-        if (formState.commissionType) {
-            payloadToSend.commission_type = formState.commissionType;
-        }
-
-        // Add wantsDemoCall if available (for custom fields)
-        payloadToSend.wantsDemoCall = formState.wantsDemoCall;
-
-        // Add website metadata if provided
-        if (formState.companyWebsite) {
-            payloadToSend.metadata = { website: formState.companyWebsite };
-        }
-
-        console.log('Stage B: Finalizing existing affiliate with payload:', JSON.stringify(payloadToSend, null, 2));
-    } else {
-        // Legacy behavior: create affiliate + enroll in one step (fallback if Stage A failed)
-        const affiliatePayload = {
-            program: programId,
+    if (!affiliateId) {
+        const createPayload = {
+            mode: 'create_affiliate_only',
             first_name: formState.firstName,
             last_name: formState.lastName,
             email: formState.email,
             password: formState.password,
             city: formState.city,
             country: formState.country,
-            company: formState.companyName
+            company: formState.companyName,
+            program_currency: programCurrency,
+            company_type: formState.companyType,
+            commission_type: formState.commissionType,
+            wantsDemoCall: formState.wantsDemoCall
         };
 
-        // Optional fields
         if (formState.companyDescription) {
-            affiliatePayload.company_description = formState.companyDescription;
+            createPayload.company_description = formState.companyDescription;
         }
 
-        if (formState.companyWebsite) {
-            affiliatePayload.metadata = { website: formState.companyWebsite };
+        if (parentId) {
+            createPayload.parent_id = parentId;
         }
 
-        // Add company_type if available (for custom fields)
-        if (formState.companyType) {
-            affiliatePayload.company_type = formState.companyType;
-        }
-
-        // Add commission_type if available (for custom fields)
-        if (formState.commissionType) {
-            affiliatePayload.commission_type = formState.commissionType;
-        }
-
-        // Add wantsDemoCall if available (for custom fields)
-        affiliatePayload.wantsDemoCall = formState.wantsDemoCall;
-
-        // Resolve parent_id with full fallback chain (URL > localStorage > field)
-        const legacyParentId = resolveParentId();
-        console.log('[Tracking] Legacy path parent_id resolved to:', legacyParentId || '(none)');
-        if (legacyParentId) {
-            affiliatePayload.parent_id = legacyParentId;
-        }
-
-        // Clean up undefined/null values
-        Object.keys(affiliatePayload).forEach((key) => {
-            if (affiliatePayload[key] === undefined || affiliatePayload[key] === null) {
-                delete affiliatePayload[key];
-            }
-            if (key === 'metadata' && affiliatePayload.metadata && Object.keys(affiliatePayload.metadata).length === 0) {
-                delete affiliatePayload.metadata;
+        Object.keys(createPayload).forEach((key) => {
+            if (createPayload[key] === undefined || createPayload[key] === null || createPayload[key] === '') {
+                delete createPayload[key];
             }
         });
 
-        payloadToSend = affiliatePayload;
-        console.log('Legacy: Creating and enrolling affiliate in one step with payload:', JSON.stringify({ ...payloadToSend, password: '***MASKED***' }, null, 2));
-    }
+        console.log('Step 1: Creating affiliate with complete data:', JSON.stringify({ ...createPayload, password: '***MASKED***' }, null, 2));
 
-    try {
-        console.log('Sending affiliate data to backend:', JSON.stringify({ ...payloadToSend, password: payloadToSend.password ? '***MASKED***' : undefined }, null, 2));
-        
-        const response = await fetch(BACKEND_API_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payloadToSend)
-        });
-
-        const contentType = response.headers.get('content-type');
-        const responseText = await response.text();
-        
-        console.log('Backend response status:', response.status);
-        console.log('Backend response content-type:', contentType);
-
-        if (!response.ok) {
-            // Check if response is HTML (error page)
-            if (contentType && contentType.includes('text/html')) {
-                console.error('Backend returned HTML error page instead of JSON');
-                throw new Error('Something went wrong while creating your affiliate account. Please try again later.');
-            }
-            
-            let errorMessage = 'Something went wrong while creating your affiliate account. Please try again later.';
-            
-            try {
-                const errorData = JSON.parse(responseText);
-                errorMessage = errorData.error || errorData.message || errorMessage;
-            } catch (e) {
-                // If not JSON, use generic message
-                console.error('Could not parse error response:', responseText);
-            }
-            
-            throw new Error(errorMessage);
+        const createResult = await postToAffiliateBackend(createPayload);
+        if (!createResult || !createResult.success || !createResult.affiliate_id) {
+            throw new Error('Failed to create affiliate account.');
         }
 
-        // Parse JSON response
-        let data;
-        try {
-            data = JSON.parse(responseText);
-        } catch (e) {
-            console.error('Could not parse success response:', responseText);
-            throw new Error('Invalid response from server');
-        }
-        
-        return data;
-    } catch (error) {
-        console.error('Error creating affiliate:', error);
-        throw error;
+        affiliateId = createResult.affiliate_id;
+        createdAffiliateId = affiliateId;
+        console.log('✅ Step 1 complete. Affiliate ID:', affiliateId);
     }
+
+    const finalizePayload = {
+        mode: 'finalize_affiliate',
+        affiliate_id: affiliateId,
+        program: programId,
+        program_currency: programCurrency
+    };
+
+    if (formState.companyWebsite) {
+        finalizePayload.metadata = { website: formState.companyWebsite };
+    }
+
+    if (parentId) {
+        finalizePayload.parent_id = parentId;
+    }
+
+    console.log('Step 2: Enrolling affiliate in program:', programId, '(' + programCurrency + ')');
+    console.log('Finalize payload:', JSON.stringify(finalizePayload, null, 2));
+
+    const finalizeResult = await postToAffiliateBackend(finalizePayload);
+
+    if (finalizeResult && finalizeResult.program && finalizeResult.program.approved === null) {
+        console.log('✅ Affiliate enrolled as PENDING in program:', programId);
+    } else if (finalizeResult && finalizeResult.program) {
+        console.warn('Enrollment completed with approved status:', finalizeResult.program.approved);
+    }
+
+    return finalizeResult;
 }
 
 // Terms Modal Functions

@@ -561,7 +561,11 @@ exports.handler = async (event) => {
                 };
             }
 
-            const mappedProgramIdFinalize = PROGRAM_ID_MAP[program] || program;
+            const mappedProgramIdFinalize =
+                PROGRAM_ID_MAP[affiliateData.program_currency] ||
+                PROGRAM_ID_MAP[program] ||
+                program;
+            console.log('[Stage B] Program enrollment target:', mappedProgramIdFinalize, '(currency:', affiliateData.program_currency || 'n/a', ', program field:', program || 'n/a', ')');
             if (!mappedProgramIdFinalize) {
                 return {
                     statusCode: 400,
@@ -911,7 +915,11 @@ exports.handler = async (event) => {
          * -------------------------------------
          * Keeps existing behavior: create affiliate + enroll in program
          */
-        const mappedProgramId = PROGRAM_ID_MAP[affiliateData.program] || affiliateData.program;
+        const mappedProgramId =
+            PROGRAM_ID_MAP[affiliateData.program_currency] ||
+            PROGRAM_ID_MAP[affiliateData.program] ||
+            affiliateData.program;
+        console.log('Program enrollment target:', mappedProgramId, '(currency:', affiliateData.program_currency || 'n/a', ', program field:', affiliateData.program || 'n/a', ')');
         if (!mappedProgramId) {
             return {
                 statusCode: 400,
