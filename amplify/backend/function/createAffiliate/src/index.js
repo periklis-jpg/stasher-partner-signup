@@ -364,6 +364,32 @@ async function setAffiliateParent(affiliateId, parentId, apiKey, logPrefix) {
     }
 }
 
+async function findAffiliateIdByEmail(email, apiKey, logPrefix) {
+    const lookupUrl = `${TAPFILIATE_BASE_URL}affiliates/?email=${encodeURIComponent(email)}`;
+    console.log(`${logPrefix} Looking up affiliate by email:`, email);
+
+    const response = await fetch(lookupUrl, {
+        method: 'GET',
+        headers: { 'X-Api-Key': apiKey, 'Content-Type': 'application/json' }
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`${logPrefix} Affiliate lookup failed:`, response.status, errorText.substring(0, 500));
+        return null;
+    }
+
+    const affiliates = await response.json();
+    if (!Array.isArray(affiliates) || affiliates.length === 0) {
+        console.warn(`${logPrefix} No affiliate found for email:`, email);
+        return null;
+    }
+
+    const match = affiliates.find((a) => (a.email || '').toLowerCase() === email.toLowerCase()) || affiliates[0];
+    console.log(`${logPrefix} Found affiliate id:`, match.id);
+    return match.id;
+}
+
 // Centralized function to build Tapfiliate affiliate payload
 function buildTapfiliatePayload(affiliateData) {
     const countryCode = getCountryISOCode(affiliateData.country);
@@ -721,6 +747,80 @@ exports.handler = async (event) => {
                     mode: 'finalize_affiliate',
                     affiliate_id,
                     program: enrollmentResult.programResult
+                })
+            };
+        }
+
+        /**
+         * MODE B2: Complete enrollment by email (recovery when create succeeded but client got 502)
+         * ---------------------------------------------------------------------------------------
+         * Expects: email, program or program_currency
+         * Does:    looks up affiliate by email, enrolls into program as pending
+         */
+        if (mode === 'complete_enrollment') {
+            const { email, metadata } = affiliateData;
+
+            if (!email) {
+                return {
+                    statusCode: 400,
+                    headers,
+                    body: JSON.stringify({ error: 'Missing email for complete_enrollment mode' })
+                };
+            }
+
+            const mappedProgramIdComplete = resolveProgramId(affiliateData);
+            if (!mappedProgramIdComplete) {
+                return {
+                    statusCode: 400,
+                    headers,
+                    body: JSON.stringify({ error: 'Missing or invalid program selection' })
+                };
+            }
+
+            const affiliateIdComplete = await findAffiliateIdByEmail(email, TAPFILIATE_API_KEY, '[Complete]');
+            if (!affiliateIdComplete) {
+                return {
+                    statusCode: 404,
+                    headers,
+                    body: JSON.stringify({ error: 'No affiliate found for this email.' })
+                };
+            }
+
+            const enrollmentResultComplete = await enrollAffiliateInProgram(
+                affiliateIdComplete,
+                mappedProgramIdComplete,
+                TAPFILIATE_API_KEY,
+                '[Complete]'
+            );
+
+            if (!enrollmentResultComplete.ok) {
+                return {
+                    statusCode: enrollmentResultComplete.statusCode,
+                    headers,
+                    body: JSON.stringify(enrollmentResultComplete.body)
+                };
+            }
+
+            await setAffiliateWebsiteMeta(
+                affiliateIdComplete,
+                metadata && metadata.website,
+                TAPFILIATE_API_KEY,
+                '[Complete]'
+            );
+
+            const parentIdComplete = validateParentId(affiliateData.parent_id);
+            if (parentIdComplete) {
+                await setAffiliateParent(affiliateIdComplete, parentIdComplete, TAPFILIATE_API_KEY, '[Complete]');
+            }
+
+            return {
+                statusCode: 200,
+                headers,
+                body: JSON.stringify({
+                    success: true,
+                    mode: 'complete_enrollment',
+                    affiliate_id: affiliateIdComplete,
+                    program: enrollmentResultComplete.programResult
                 })
             };
         }
