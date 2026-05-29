@@ -18,8 +18,11 @@
     var DEFAULT_REPO_NAME = 'stasher-partner-signup';
     var DEFAULT_REPO_BRANCH = 'main';
     var PARTNERS_JSON_PATH = 'whitelabel/partners.json';
+    var DEMO_LINKS_JSON_PATH = 'whitelabel/demo-links.json';
     var LOGOS_DIR = 'whitelabel/logos';
     var PUBLIC_PARTNERS_URL = '/whitelabel/partners.json';
+    var PUBLIC_DEMO_LINKS_URL = '/whitelabel/demo-links.json';
+    var DEFAULT_DEMO_CAL_URL = 'https://cal.com/periklis/15min';
     var MAX_LOGO_BYTES = 2 * 1024 * 1024;
     var SHARE_BASE_URL = 'https://partners.stasher.com/';
 
@@ -69,8 +72,29 @@
     var $listContent = document.getElementById('wlListContent');
     var $refreshBtn = document.getElementById('wlRefreshBtn');
 
+    var $brandedSection = document.getElementById('wlBrandedSection');
+    var $demoSection = document.getElementById('wlDemoSection');
+    var $demoDefaultUrl = document.getElementById('wlDemoDefaultUrl');
+    var $saveDefaultDemoBtn = document.getElementById('wlSaveDefaultDemoBtn');
+    var $demoDefaultStatus = document.getElementById('wlDemoDefaultStatus');
+    var $demoFormCard = document.getElementById('wlDemoFormCard');
+    var $demoFormTitle = document.getElementById('wlDemoFormTitle');
+    var $demoForm = document.getElementById('wlDemoForm');
+    var $demoEditingId = document.getElementById('wlDemoEditingId');
+    var $demoName = document.getElementById('wlDemoName');
+    var $demoParentId = document.getElementById('wlDemoParentId');
+    var $demoCalUrl = document.getElementById('wlDemoCalUrl');
+    var $demoSaveBtn = document.getElementById('wlDemoSaveBtn');
+    var $demoSaveStatus = document.getElementById('wlDemoSaveStatus');
+    var $cancelDemoEditBtn = document.getElementById('wlCancelDemoEditBtn');
+    var $demoListCard = document.getElementById('wlDemoListCard');
+    var $demoListContent = document.getElementById('wlDemoListContent');
+    var $demoRefreshBtn = document.getElementById('wlDemoRefreshBtn');
+
     // In-memory cache of currently rendered partners for edit/delete lookups
     var partnersCache = {};
+    var demoLinksCache = {};
+    var demoLinksConfig = { version: 1, defaultUrl: DEFAULT_DEMO_CAL_URL, links: {} };
 
     // ===================================================================
     // GATE
@@ -147,6 +171,8 @@
         var hasConfig = cfg && cfg.token && cfg.owner && cfg.repo && cfg.branch;
         $formCard.hidden = !hasConfig;
         $listCard.hidden = !hasConfig;
+        if ($brandedSection) $brandedSection.hidden = !hasConfig;
+        if ($demoSection) $demoSection.hidden = !hasConfig;
     }
 
     $saveConfigBtn.addEventListener('click', function () {
@@ -617,15 +643,16 @@
     $refreshBtn.addEventListener('click', refreshDashboard);
 
     function refreshDashboard() {
-        if ($listCard.hidden) return;
-        $listContent.innerHTML = '<p class="wl-muted">Loading…</p>';
+        if ($listCard.hidden && (!$demoListCard || $demoListCard.hidden)) return;
+        if ($listContent) $listContent.innerHTML = '<p class="wl-muted">Loading…</p>';
+        if ($demoListContent) $demoListContent.innerHTML = '<p class="wl-muted">Loading…</p>';
 
         var cfg = readConfig();
-        var fetchPromise;
+        var fetchPartners;
+        var fetchDemoLinks;
+
         if (cfg && cfg.token) {
-            // Authenticated GET against GitHub so we see the latest commit immediately,
-            // not the cached deployed copy.
-            fetchPromise = getFile(cfg, PARTNERS_JSON_PATH).then(function (existing) {
+            fetchPartners = getFile(cfg, PARTNERS_JSON_PATH).then(function (existing) {
                 if (!existing || !existing.content) return { version: 1, partners: {} };
                 try {
                     return JSON.parse(atob(existing.content.replace(/\n/g, '')));
@@ -633,19 +660,45 @@
                     return { version: 1, partners: {} };
                 }
             });
+            fetchDemoLinks = getFile(cfg, DEMO_LINKS_JSON_PATH).then(function (existing) {
+                if (!existing || !existing.content) {
+                    return { version: 1, defaultUrl: DEFAULT_DEMO_CAL_URL, links: {} };
+                }
+                try {
+                    return JSON.parse(atob(existing.content.replace(/\n/g, '')));
+                } catch (e) {
+                    return { version: 1, defaultUrl: DEFAULT_DEMO_CAL_URL, links: {} };
+                }
+            });
         } else {
-            // Fallback to public static copy
-            fetchPromise = fetch(PUBLIC_PARTNERS_URL, { cache: 'no-store' })
+            fetchPartners = fetch(PUBLIC_PARTNERS_URL, { cache: 'no-store' })
                 .then(function (r) { return r.ok ? r.json() : { partners: {} }; });
+            fetchDemoLinks = fetch(PUBLIC_DEMO_LINKS_URL, { cache: 'no-store' })
+                .then(function (r) {
+                    return r.ok ? r.json() : { version: 1, defaultUrl: DEFAULT_DEMO_CAL_URL, links: {} };
+                });
         }
 
-        fetchPromise
-            .then(function (data) {
-                partnersCache = (data && data.partners) ? data.partners : {};
+        Promise.all([fetchPartners, fetchDemoLinks])
+            .then(function (results) {
+                partnersCache = (results[0] && results[0].partners) ? results[0].partners : {};
+                demoLinksConfig = results[1] || { version: 1, defaultUrl: DEFAULT_DEMO_CAL_URL, links: {} };
+                if (!demoLinksConfig.links) demoLinksConfig.links = {};
+                if (!demoLinksConfig.defaultUrl) demoLinksConfig.defaultUrl = DEFAULT_DEMO_CAL_URL;
+                demoLinksCache = demoLinksConfig.links;
                 renderList(partnersCache);
+                renderDemoList(demoLinksConfig);
+                if ($demoDefaultUrl) {
+                    $demoDefaultUrl.value = demoLinksConfig.defaultUrl || DEFAULT_DEMO_CAL_URL;
+                }
             })
             .catch(function (err) {
-                $listContent.innerHTML = '<p class="wl-list-empty">Could not load list: ' + escapeHtml(err.message) + '</p>';
+                if ($listContent) {
+                    $listContent.innerHTML = '<p class="wl-list-empty">Could not load list: ' + escapeHtml(err.message) + '</p>';
+                }
+                if ($demoListContent) {
+                    $demoListContent.innerHTML = '<p class="wl-list-empty">Could not load demo links: ' + escapeHtml(err.message) + '</p>';
+                }
             });
     }
 
@@ -699,6 +752,264 @@
             btn.addEventListener('click', function () {
                 var temp = document.createElement('input');
                 temp.value = btn.getAttribute('data-copy') || '';
+                document.body.appendChild(temp);
+                temp.select();
+                try { document.execCommand('copy'); } catch (e) {}
+                document.body.removeChild(temp);
+                btn.textContent = 'Copied!';
+                setTimeout(function () { btn.textContent = 'Copy link'; }, 1500);
+            });
+        });
+    }
+
+    // ===================================================================
+    // DEMO CALL LINKS
+    // ===================================================================
+
+    $demoRefreshBtn.addEventListener('click', refreshDashboard);
+
+    $saveDefaultDemoBtn.addEventListener('click', function () {
+        var cfg = readConfig();
+        if (!cfg || !cfg.token) {
+            setStatus($demoDefaultStatus, 'Set storage connection first.', 'error');
+            return;
+        }
+        var defaultUrl = ($demoDefaultUrl.value || '').trim();
+        if (!defaultUrl || !/^https?:\/\//i.test(defaultUrl)) {
+            setStatus($demoDefaultStatus, 'Enter a valid Cal.com URL.', 'error');
+            return;
+        }
+        setStatus($demoDefaultStatus, 'Saving default…', null);
+        saveDemoLinksDocument(cfg, { defaultUrl: defaultUrl })
+            .then(function () {
+                setStatus($demoDefaultStatus, 'Default saved.', 'success');
+                refreshDashboard();
+            })
+            .catch(function (err) {
+                setStatus($demoDefaultStatus, 'Save failed: ' + err.message, 'error');
+            });
+    });
+
+    $demoForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        saveDemoLink().catch(function (err) {
+            setStatus($demoSaveStatus, 'Save failed: ' + err.message, 'error');
+            $demoSaveBtn.disabled = false;
+        });
+    });
+
+    $cancelDemoEditBtn.addEventListener('click', function () {
+        exitDemoEditMode();
+        $demoForm.reset();
+        setStatus($demoSaveStatus, '', null);
+    });
+
+    function saveDemoLink() {
+        var cfg = readConfig();
+        if (!cfg || !cfg.token) {
+            return Promise.reject(new Error('Set storage connection first.'));
+        }
+
+        var editingId = ($demoEditingId.value || '').trim();
+        var isEditing = !!editingId;
+        var parentId = isEditing ? editingId : sanitizeCode($demoParentId.value);
+        if (!parentId) return Promise.reject(new Error('Parent ID is invalid.'));
+
+        var name = ($demoName.value || '').trim();
+        if (!name) return Promise.reject(new Error('Name is required.'));
+
+        var calUrl = ($demoCalUrl.value || '').trim();
+        if (!calUrl || !/^https?:\/\//i.test(calUrl)) {
+            return Promise.reject(new Error('Cal.com link must start with http:// or https://.'));
+        }
+
+        $demoSaveBtn.disabled = true;
+        setStatus($demoSaveStatus, 'Saving…', null);
+
+        return upsertDemoLink(cfg, parentId, {
+            parentId: parentId,
+            name: name,
+            calUrl: calUrl,
+            updatedAt: new Date().toISOString()
+        }).then(function () {
+            setStatus($demoSaveStatus, isEditing ? 'Updated.' : 'Saved.', 'success');
+            $demoSaveBtn.disabled = false;
+            exitDemoEditMode();
+            $demoForm.reset();
+            refreshDashboard();
+        });
+    }
+
+    function enterDemoEditMode(parentId) {
+        var link = demoLinksCache[parentId];
+        if (!link) {
+            setStatus($demoSaveStatus, 'Could not find demo link: ' + parentId, 'error');
+            return;
+        }
+        $demoEditingId.value = parentId;
+        $demoParentId.value = parentId;
+        $demoParentId.readOnly = true;
+        $demoParentId.classList.add('wl-readonly');
+        $demoName.value = link.name || '';
+        $demoCalUrl.value = link.calUrl || '';
+        $demoFormTitle.textContent = 'Edit demo call link';
+        $demoSaveBtn.textContent = 'Update demo link';
+        $cancelDemoEditBtn.hidden = false;
+        setStatus($demoSaveStatus, '', null);
+        $demoFormCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function exitDemoEditMode() {
+        $demoEditingId.value = '';
+        $demoParentId.readOnly = false;
+        $demoParentId.classList.remove('wl-readonly');
+        $demoFormTitle.textContent = 'Add demo call link';
+        $demoSaveBtn.textContent = 'Save demo link';
+        $cancelDemoEditBtn.hidden = true;
+    }
+
+    function deleteDemoLink(parentId) {
+        var cfg = readConfig();
+        if (!cfg || !cfg.token) {
+            setStatus($demoSaveStatus, 'Set storage connection first.', 'error');
+            return;
+        }
+        var link = demoLinksCache[parentId];
+        if (!link) return;
+        if (!window.confirm('Delete demo link for "' + (link.name || parentId) + '"?')) return;
+
+        setStatus($demoSaveStatus, 'Deleting…', null);
+        removeDemoLinkFromJson(cfg, parentId)
+            .then(function () {
+                setStatus($demoSaveStatus, 'Deleted.', 'success');
+                if ($demoEditingId.value === parentId) {
+                    exitDemoEditMode();
+                    $demoForm.reset();
+                }
+                refreshDashboard();
+            })
+            .catch(function (err) {
+                setStatus($demoSaveStatus, 'Delete failed: ' + err.message, 'error');
+            });
+    }
+
+    function loadDemoLinksDocument(cfg) {
+        return getFile(cfg, DEMO_LINKS_JSON_PATH).then(function (existing) {
+            var current = { version: 1, defaultUrl: DEFAULT_DEMO_CAL_URL, links: {} };
+            if (existing && existing.content) {
+                try {
+                    current = JSON.parse(atob(existing.content.replace(/\n/g, '')));
+                } catch (e) {}
+            }
+            if (!current.links) current.links = {};
+            if (!current.defaultUrl) current.defaultUrl = DEFAULT_DEMO_CAL_URL;
+            if (!current.version) current.version = 1;
+            return { existing: existing, data: current };
+        });
+    }
+
+    function saveDemoLinksDocument(cfg, patch) {
+        return loadDemoLinksDocument(cfg).then(function (result) {
+            var current = result.data;
+            if (patch.defaultUrl) current.defaultUrl = patch.defaultUrl;
+            var newJson = JSON.stringify(current, null, 2) + '\n';
+            var body = {
+                message: 'whitelabel: update demo links config',
+                content: b64EncodeUtf8(newJson),
+                branch: cfg.branch
+            };
+            if (result.existing && result.existing.sha) body.sha = result.existing.sha;
+            return githubApi('PUT', repoContentsPath(cfg, DEMO_LINKS_JSON_PATH), body, cfg.token);
+        });
+    }
+
+    function upsertDemoLink(cfg, parentId, entry) {
+        return loadDemoLinksDocument(cfg).then(function (result) {
+            var current = result.data;
+            current.links[parentId] = entry;
+            var newJson = JSON.stringify(current, null, 2) + '\n';
+            var body = {
+                message: 'whitelabel: save demo link ' + parentId,
+                content: b64EncodeUtf8(newJson),
+                branch: cfg.branch
+            };
+            if (result.existing && result.existing.sha) body.sha = result.existing.sha;
+            return githubApi('PUT', repoContentsPath(cfg, DEMO_LINKS_JSON_PATH), body, cfg.token);
+        });
+    }
+
+    function removeDemoLinkFromJson(cfg, parentId) {
+        return loadDemoLinksDocument(cfg).then(function (result) {
+            var current = result.data;
+            if (!(parentId in current.links)) return;
+            delete current.links[parentId];
+            var newJson = JSON.stringify(current, null, 2) + '\n';
+            var body = {
+                message: 'whitelabel: remove demo link ' + parentId,
+                content: b64EncodeUtf8(newJson),
+                branch: cfg.branch
+            };
+            if (result.existing && result.existing.sha) body.sha = result.existing.sha;
+            return githubApi('PUT', repoContentsPath(cfg, DEMO_LINKS_JSON_PATH), body, cfg.token);
+        });
+    }
+
+    function renderDemoList(config) {
+        if (!$demoListContent) return;
+        var links = (config && config.links) ? config.links : {};
+        var defaultUrl = (config && config.defaultUrl) ? config.defaultUrl : DEFAULT_DEMO_CAL_URL;
+        var ids = Object.keys(links).sort();
+
+        var defaultHtml = '' +
+            '<div class="wl-default-preview">' +
+                '<strong>Default (no parent match):</strong> ' +
+                '<a href="' + escapeAttr(defaultUrl) + '" target="_blank" rel="noopener">' + escapeHtml(defaultUrl) + '</a>' +
+            '</div>';
+
+        if (ids.length === 0) {
+            $demoListContent.innerHTML = defaultHtml + '<p class="wl-list-empty">No parent-specific demo links yet. Add one above.</p>';
+            return;
+        }
+
+        var html = defaultHtml + ids.map(function (id) {
+            var link = links[id] || {};
+            var calUrl = link.calUrl || '';
+            return '' +
+                '<div class="wl-demo-item">' +
+                    '<div class="wl-demo-item-body">' +
+                        '<p class="wl-demo-item-name">' + escapeHtml(link.name || id) + '</p>' +
+                        '<div class="wl-demo-item-meta">' +
+                            '<span>Parent ID: <code>' + escapeHtml(id) + '</code></span>' +
+                            (calUrl
+                                ? '<a class="wl-demo-live-link" href="' + escapeAttr(calUrl) + '" target="_blank" rel="noopener">' + escapeHtml(calUrl) + '</a>'
+                                : '<span class="wl-muted">No Cal.com URL</span>') +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="wl-demo-item-actions">' +
+                        '<a class="wl-link" href="' + escapeAttr(calUrl) + '" target="_blank" rel="noopener">Open link</a>' +
+                        '<button type="button" class="wl-link" data-demo-edit="' + escapeAttr(id) + '">Edit</button>' +
+                        '<button type="button" class="wl-link wl-link-danger" data-demo-delete="' + escapeAttr(id) + '">Delete</button>' +
+                        '<button type="button" class="wl-link" data-demo-copy="' + escapeAttr(calUrl) + '">Copy link</button>' +
+                    '</div>' +
+                '</div>';
+        }).join('');
+
+        $demoListContent.innerHTML = html;
+
+        Array.prototype.forEach.call($demoListContent.querySelectorAll('[data-demo-edit]'), function (btn) {
+            btn.addEventListener('click', function () {
+                enterDemoEditMode(btn.getAttribute('data-demo-edit'));
+            });
+        });
+        Array.prototype.forEach.call($demoListContent.querySelectorAll('[data-demo-delete]'), function (btn) {
+            btn.addEventListener('click', function () {
+                deleteDemoLink(btn.getAttribute('data-demo-delete'));
+            });
+        });
+        Array.prototype.forEach.call($demoListContent.querySelectorAll('[data-demo-copy]'), function (btn) {
+            btn.addEventListener('click', function () {
+                var temp = document.createElement('input');
+                temp.value = btn.getAttribute('data-demo-copy') || '';
                 document.body.appendChild(temp);
                 temp.select();
                 try { document.execCommand('copy'); } catch (e) {}

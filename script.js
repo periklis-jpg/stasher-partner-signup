@@ -516,6 +516,72 @@ if (document.readyState === 'loading') {
 // ========================================
 
 // ========================================
+// DEMO CALL LINKS (parent ID → Cal.com) - START
+// ========================================
+
+const DEFAULT_DEMO_CAL_URL = 'https://cal.com/periklis/15min';
+const WHITELABEL_DEMO_LINKS_URL = '/whitelabel/demo-links.json';
+let demoLinksConfig = null;
+
+function fetchDemoLinksConfig() {
+    if (demoLinksConfig) {
+        return Promise.resolve(demoLinksConfig);
+    }
+    return fetch(WHITELABEL_DEMO_LINKS_URL, { cache: 'no-store' })
+        .then(function (response) {
+            if (!response.ok) return null;
+            return response.json();
+        })
+        .then(function (data) {
+            demoLinksConfig = data || { defaultUrl: DEFAULT_DEMO_CAL_URL, links: {} };
+            if (!demoLinksConfig.links) demoLinksConfig.links = {};
+            if (!demoLinksConfig.defaultUrl) demoLinksConfig.defaultUrl = DEFAULT_DEMO_CAL_URL;
+            return demoLinksConfig;
+        })
+        .catch(function () {
+            demoLinksConfig = { defaultUrl: DEFAULT_DEMO_CAL_URL, links: {} };
+            return demoLinksConfig;
+        });
+}
+
+function resolveDemoCalUrl() {
+    const config = demoLinksConfig || { defaultUrl: DEFAULT_DEMO_CAL_URL, links: {} };
+    const parentId = resolveParentId();
+    const links = config.links || {};
+
+    if (parentId && links[parentId] && links[parentId].calUrl) {
+        return links[parentId].calUrl;
+    }
+
+    if (parentId && links) {
+        const matchKey = Object.keys(links).find(function (key) {
+            return key.toLowerCase() === String(parentId).toLowerCase();
+        });
+        if (matchKey && links[matchKey].calUrl) {
+            return links[matchKey].calUrl;
+        }
+    }
+
+    return config.defaultUrl || DEFAULT_DEMO_CAL_URL;
+}
+
+function initDemoCallLinks() {
+    fetchDemoLinksConfig().then(function () {
+        console.log('[Demo] Cal.com links loaded. Default:', demoLinksConfig.defaultUrl);
+    });
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initDemoCallLinks);
+} else {
+    initDemoCallLinks();
+}
+
+// ========================================
+// DEMO CALL LINKS - END
+// ========================================
+
+// ========================================
 // LANGUAGE URL PARAMETER - START
 // ========================================
 
@@ -2149,7 +2215,7 @@ function setupEventListeners() {
                 }
                 console.log('✅ Affiliate finalized before demo booking');
                 clearSignupFlowState();
-                window.location.href = 'https://cal.com/periklis/15min';
+                window.location.href = resolveDemoCalUrl();
             } catch (error) {
                 console.error('Error finalizing affiliate before demo booking:', error);
                 alert(error.message || 'Something went wrong while creating your affiliate account. Please try again.');
